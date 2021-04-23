@@ -1,0 +1,41 @@
+package ranks
+
+import (
+	"database/sql"
+	"encoding/json"
+	"net/http"
+)
+
+type Rank struct {
+	IDRANK string `json:"idrank"`
+	Rank   string `json:"rank"`
+}
+
+var db *sql.DB
+var err error
+
+func GetRanks(w http.ResponseWriter, r *http.Request) {
+
+	db, err = sql.Open("mysql", "root:idEt38@tcp(127.0.0.1:3306)/phones")
+	if err != nil {
+		panic(err.Error())
+	}
+	defer db.Close()
+
+	w.Header().Set("Content-Type", "application/json")
+	var ranks []Rank
+	result, err := db.Query("SELECT idrank, rank from ranks")
+	if err != nil {
+		panic(err.Error())
+	}
+	defer result.Close()
+	for result.Next() {
+		var rank Rank
+		err := result.Scan(&rank.IDRANK, &rank.Rank)
+		if err != nil {
+			panic(err.Error())
+		}
+		ranks = append(ranks, rank)
+	}
+	json.NewEncoder(w).Encode(ranks)
+}

@@ -9,6 +9,7 @@ import (
 
 	"alexchubgit/api/routes/dep"
 	"alexchubgit/api/routes/places"
+	"alexchubgit/api/routes/pos"
 	"alexchubgit/api/routes/ranks"
 
 	"alexchubgit/api/routes/auth"
@@ -18,8 +19,10 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/ranks", ranks.GetRanks).Methods("GET")
+	router.HandleFunc("/pos", pos.GetPoses).Methods("GET")
 	router.HandleFunc("/deps", dep.GetDeps).Methods("GET")
 	router.HandleFunc("/places", places.GetPlaces).Methods("GET")
+	router.HandleFunc("/one_dep/{iddep}", dep.GetOneDep).Methods("GET")
 
 	router.HandleFunc("/login", auth.Login).Methods("POST")
 

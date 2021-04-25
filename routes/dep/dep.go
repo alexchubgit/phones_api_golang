@@ -16,6 +16,7 @@ type Dep struct {
 	Email    string `json:"email"`
 	Abbr     string `json:"abbr"`
 	Idparent int    `json:"idparent"`
+	Idaddr   int    `json:"idaddr"`
 }
 
 var db *sql.DB

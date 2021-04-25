@@ -7,8 +7,14 @@ import (
 )
 
 type Place struct {
-	IDPLACE string `json:"idplace"`
-	Place   string `json:"place"`
+	IDPLACE  string `json:"idplace"`
+	Place    string `json:"place"`
+	Work     string `json:"work"`
+	Internal string `json:"internal"`
+	Ipphone  string `json:"ipphone"`
+	Arm      string `json:"arm"`
+	Idperson int    `json:"idperson"`
+	Idaddr   int    `json:"idaddr"`
 }
 
 var db *sql.DB
@@ -16,7 +22,7 @@ var err error
 
 func GetPlaces(w http.ResponseWriter, r *http.Request) {
 
-	db, err = sql.Open("mysql", "root:idEt38@tcp(127.0.0.1:3306)/phones")
+	db, err = sql.Open("mysql", "root:ju0jiL@tcp(127.0.0.1:3306)/phones")
 	if err != nil {
 		panic(err.Error())
 	}

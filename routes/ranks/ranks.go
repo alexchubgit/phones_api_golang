@@ -16,7 +16,7 @@ var err error
 
 func GetRanks(w http.ResponseWriter, r *http.Request) {
 
-	db, err = sql.Open("mysql", "root:idEt38@tcp(127.0.0.1:3306)/phones")
+	db, err = sql.Open("mysql", "root:ju0jiL@tcp(127.0.0.1:3306)/phones")
 	if err != nil {
 		panic(err.Error())
 	}

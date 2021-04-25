@@ -19,23 +19,21 @@ import (
 
 func main() {
 
-	fs := http.FileServer(http.Dir("./photo"))
-	http.Handle("/photo/", http.StripPrefix("/photo/", fs))
-
 	router := mux.NewRouter()
 
 	router.HandleFunc("/addr", addr.GetAddr).Methods("GET")
 	router.HandleFunc("/ranks", ranks.GetRanks).Methods("GET")
-
 	router.HandleFunc("/pos", pos.GetPoses).Methods("GET")
 	router.HandleFunc("/deps", dep.GetDeps).Methods("GET")
 	router.HandleFunc("/places", places.GetPlaces).Methods("GET")
 
 	router.HandleFunc("/one_dep/{iddep}", dep.GetOneDep).Methods("GET")
-	router.HandleFunc("/one_person/{idperson}", persons.GetOnePerson).Methods("GET")
 	router.HandleFunc("/persons/{iddep}", persons.GetPersons).Methods("GET")
+	router.HandleFunc("/one_person/{idperson}", persons.GetOnePerson).Methods("GET")
 
 	router.HandleFunc("/login", auth.Login).Methods("POST")
+
+	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
 
 	fmt.Println("Server running on port 8000")
 	http.ListenAndServe(":8000", router)
@@ -46,9 +44,3 @@ func main() {
 //router.HandleFunc("/posts/{id}", getPost).Methods("GET")
 //router.HandleFunc("/posts/{id}", updatePost).Methods("PUT")
 //router.HandleFunc("/posts/{id}", deletePost).Methods("DELETE")
-
-//fmt.Println("Hello, World!")
-
-// func GreetingFor(name string) string {
-// 	return fmt.Sprintf("Hello, %s!", name)
-// }

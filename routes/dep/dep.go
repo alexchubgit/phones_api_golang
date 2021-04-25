@@ -58,6 +58,7 @@ func GetOneDep(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
+	//vals := r.URL.Query()
 	fmt.Println(params)
 	result, err := db.Query("SELECT iddep, depart, sdep, email, abbr, idparent FROM depart WHERE iddep = ?", params["iddep"])
 	if err != nil {

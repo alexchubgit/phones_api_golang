@@ -38,7 +38,7 @@ func GetPersons(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(params)
 
 	var persons []Person
-	result, err := db.Query("SELECT idperson, name, date, file, cellular, business, iddep, idpos, idrank, idrole FROM persons WHERE iddep like ? ORDER BY `name`", params["iddep"])
+	result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, iddep, idpos, idrank, idrole FROM persons WHERE iddep like ? ORDER BY `name`", params["iddep"])
 
 	if err != nil {
 		panic(err.Error())
@@ -67,7 +67,7 @@ func GetOnePerson(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	fmt.Println(params)
-	result, err := db.Query("SELECT idperson, name, date, file, cellular, business, iddep, idpos, idrank, idrole FROM persons WHERE idperson = ?", params["idperson"])
+	result, err := db.Query("SELECT idperson, name, date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, iddep, idpos, idrank, idrole FROM persons WHERE idperson = ?", params["idperson"])
 	if err != nil {
 		panic(err.Error())
 	}

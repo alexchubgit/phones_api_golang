@@ -1,1 +1,6 @@
-# phones_api_golang
+# API phones
+API phones
+
+### Licensing
+
+Client phones is [MIT licensed](./LICENSE).

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 )
@@ -24,7 +25,7 @@ var err error
 
 func GetDeps(w http.ResponseWriter, r *http.Request) {
 
-	db, err = sql.Open("mysql", "root:ju0jiL@tcp(127.0.0.1:3306)/phones")
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -50,7 +51,7 @@ func GetDeps(w http.ResponseWriter, r *http.Request) {
 
 func GetOneDep(w http.ResponseWriter, r *http.Request) {
 
-	db, err = sql.Open("mysql", "root:ju0jiL@tcp(127.0.0.1:3306)/phones")
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 	if err != nil {
 		panic(err.Error())
 	}

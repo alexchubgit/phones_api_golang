@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+	"os"
 )
 
 type Addr struct {
@@ -19,7 +20,7 @@ var err error
 
 func GetAddr(w http.ResponseWriter, r *http.Request) {
 
-	db, err = sql.Open("mysql", "root:ju0jiL@tcp(127.0.0.1:3306)/phones")
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 	if err != nil {
 		panic(err.Error())
 	}

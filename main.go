@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 
 	"alexchubgit/api/routes/addr"
 	"alexchubgit/api/routes/dep"
@@ -16,6 +18,15 @@ import (
 
 	"alexchubgit/api/routes/auth"
 )
+
+// init is invoked before main()
+// loads values from .env into the system
+
+func init() {
+	if err := godotenv.Load(".env"); err != nil {
+		log.Print("File .env not found")
+	}
+}
 
 func main() {
 

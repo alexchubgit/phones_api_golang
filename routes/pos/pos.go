@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -21,7 +22,7 @@ var err error
 
 func GetPoses(w http.ResponseWriter, r *http.Request) {
 
-	db, err = sql.Open("mysql", "root:ju0jiL@tcp(127.0.0.1:3306)/phones")
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -47,7 +48,7 @@ func GetPoses(w http.ResponseWriter, r *http.Request) {
 
 func GetPos(w http.ResponseWriter, r *http.Request) {
 
-	db, err = sql.Open("mysql", "root:ju0jiL@tcp(127.0.0.1:3306)/phones")
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -73,7 +74,7 @@ func GetPos(w http.ResponseWriter, r *http.Request) {
 
 func CreatePos(w http.ResponseWriter, r *http.Request) {
 
-	db, err = sql.Open("mysql", "root:ju0jiL@tcp(127.0.0.1:3306)/phones")
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -99,7 +100,7 @@ func CreatePos(w http.ResponseWriter, r *http.Request) {
 
 func UpdatePos(w http.ResponseWriter, r *http.Request) {
 
-	db, err = sql.Open("mysql", "root:ju0jiL@tcp(127.0.0.1:3306)/phones")
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -126,7 +127,7 @@ func UpdatePos(w http.ResponseWriter, r *http.Request) {
 
 func DeletePos(w http.ResponseWriter, r *http.Request) {
 
-	db, err = sql.Open("mysql", "root:ju0jiL@tcp(127.0.0.1:3306)/phones")
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 	if err != nil {
 		panic(err.Error())
 	}

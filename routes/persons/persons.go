@@ -4,8 +4,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"net/http"
+	"os"
+
+	"github.com/gorilla/mux"
 )
 
 type Person struct {
@@ -27,7 +29,7 @@ var err error
 
 func GetPersons(w http.ResponseWriter, r *http.Request) {
 
-	db, err = sql.Open("mysql", "root:ju0jiL@tcp(127.0.0.1:3306)/phones")
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -58,7 +60,7 @@ func GetPersons(w http.ResponseWriter, r *http.Request) {
 
 func GetOnePerson(w http.ResponseWriter, r *http.Request) {
 
-	db, err = sql.Open("mysql", "root:ju0jiL@tcp(127.0.0.1:3306)/phones")
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 	if err != nil {
 		panic(err.Error())
 	}

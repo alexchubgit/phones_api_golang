@@ -24,6 +24,7 @@ func GetRanks(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	w.Header().Set("Content-Type", "application/json")
+
 	var ranks []Rank
 	result, err := db.Query("SELECT idrank, rank from ranks")
 	if err != nil {

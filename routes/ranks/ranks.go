@@ -52,3 +52,15 @@ func GetRanks(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(ranks)
 }
+
+func CreateRank(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func UpdateRank(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func DeleteRank(w http.ResponseWriter, r *http.Request) {
+
+}

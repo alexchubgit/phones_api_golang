@@ -9,6 +9,11 @@ import (
 	//jwt "github.com/dgrijalva/jwt-go"
 )
 
+type Auth struct {
+	Login  string `json:"login"`
+	Passwd string `json:"passwd"`
+}
+
 var db *sql.DB
 var err error
 

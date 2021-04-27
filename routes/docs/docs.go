@@ -52,3 +52,15 @@ func GetDocs(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(docs)
 }
+
+func CreateDoc(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func UpdateDoc(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func DeleteDoc(w http.ResponseWriter, r *http.Request) {
+
+}

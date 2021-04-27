@@ -99,3 +99,15 @@ func GetOneDep(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(dep)
 }
+
+func CreateDep(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func UpdateDep(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func DeleteDep(w http.ResponseWriter, r *http.Request) {
+
+}

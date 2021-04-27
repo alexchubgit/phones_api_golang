@@ -30,3 +30,15 @@ func GetTokens(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 }
+
+func CreateToken(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func UpdateToken(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func DeleteToken(w http.ResponseWriter, r *http.Request) {
+
+}

@@ -54,3 +54,15 @@ func GetCert(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(certs)
 }
+
+func CreateCert(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func UpdateCert(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func DeleteCert(w http.ResponseWriter, r *http.Request) {
+
+}

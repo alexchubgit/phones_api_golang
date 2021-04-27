@@ -55,3 +55,15 @@ func GetAddr(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(addrs)
 }
+
+func CreateAddr(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func UpdateAddr(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func DeleteAddr(w http.ResponseWriter, r *http.Request) {
+
+}

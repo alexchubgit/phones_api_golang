@@ -103,3 +103,15 @@ func GetOnePerson(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(person)
 }
+
+func CreatePerson(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func UpdatePerson(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func DeletePerson(w http.ResponseWriter, r *http.Request) {
+
+}

@@ -58,16 +58,45 @@ func GetAddr(w http.ResponseWriter, r *http.Request) {
 
 func GetOneAddr(w http.ResponseWriter, r *http.Request) {
 
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
+
 }
 
 func CreateAddr(w http.ResponseWriter, r *http.Request) {
 
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
 }
 
 func UpdateAddr(w http.ResponseWriter, r *http.Request) {
 
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
 }
 
 func DeleteAddr(w http.ResponseWriter, r *http.Request) {
 
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
 }

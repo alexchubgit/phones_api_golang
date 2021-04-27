@@ -55,12 +55,33 @@ func GetDocs(w http.ResponseWriter, r *http.Request) {
 
 func CreateDoc(w http.ResponseWriter, r *http.Request) {
 
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
 }
 
 func UpdateDoc(w http.ResponseWriter, r *http.Request) {
 
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
 }
 
 func DeleteDoc(w http.ResponseWriter, r *http.Request) {
 
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
 }

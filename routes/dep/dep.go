@@ -102,12 +102,33 @@ func GetOneDep(w http.ResponseWriter, r *http.Request) {
 
 func CreateDep(w http.ResponseWriter, r *http.Request) {
 
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
 }
 
 func UpdateDep(w http.ResponseWriter, r *http.Request) {
 
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
 }
 
 func DeleteDep(w http.ResponseWriter, r *http.Request) {
 
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
 }

@@ -57,12 +57,33 @@ func GetCert(w http.ResponseWriter, r *http.Request) {
 
 func CreateCert(w http.ResponseWriter, r *http.Request) {
 
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
 }
 
 func UpdateCert(w http.ResponseWriter, r *http.Request) {
 
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
 }
 
 func DeleteCert(w http.ResponseWriter, r *http.Request) {
 
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
 }

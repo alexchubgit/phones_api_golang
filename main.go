@@ -47,6 +47,11 @@ func main() {
 	router.HandleFunc("/one_person/{idperson}", persons.GetOnePerson).Methods("GET")
 
 	router.HandleFunc("/login", auth.Login).Methods("POST")
+	router.HandleFunc("/pos", pos.CreatePos).Methods("POST")
+
+	router.HandleFunc("/pos/{idpos}", pos.UpdatePos).Methods("PUT")
+
+	router.HandleFunc("/pos/{idpos}", pos.DeletePos).Methods("DELETE")
 
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
 
@@ -54,8 +59,3 @@ func main() {
 	http.ListenAndServe(":8000", router)
 
 }
-
-//router.HandleFunc("/posts", createPost).Methods("POST")
-//router.HandleFunc("/posts/{id}", getPost).Methods("GET")
-//router.HandleFunc("/posts/{id}", updatePost).Methods("PUT")
-//router.HandleFunc("/posts/{id}", deletePost).Methods("DELETE")

@@ -3,6 +3,7 @@ package auth
 import (
 	"database/sql"
 	"net/http"
+	"os"
 	//"encoding/json"
 	// "fmt"
 	//"log"
@@ -19,4 +20,11 @@ var err error
 
 func Login(w http.ResponseWriter, r *http.Request) {
 
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
 }

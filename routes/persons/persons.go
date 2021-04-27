@@ -17,11 +17,11 @@ type Person struct {
 	File     string `json:"file"`
 	Cellular string `json:"cellular"`
 	Business string `json:"business"`
+	Passwd   string `json:"passwd"`
 	Iddep    int    `json:"iddep"`
 	Idpos    int    `json:"idpos"`
 	Idrank   int    `json:"idrank"`
 	Idrole   int    `json:"idrole"`
-	Passwd   string `json:"passwd"`
 }
 
 var db *sql.DB
@@ -106,12 +106,33 @@ func GetOnePerson(w http.ResponseWriter, r *http.Request) {
 
 func CreatePerson(w http.ResponseWriter, r *http.Request) {
 
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
 }
 
 func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
 }
 
 func DeletePerson(w http.ResponseWriter, r *http.Request) {
 
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
 }

@@ -56,6 +56,10 @@ func GetAddr(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(addrs)
 }
 
+func GetOneAddr(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func CreateAddr(w http.ResponseWriter, r *http.Request) {
 
 }

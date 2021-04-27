@@ -53,6 +53,10 @@ func GetRanks(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(ranks)
 }
 
+func GetOneRank(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func CreateRank(w http.ResponseWriter, r *http.Request) {
 
 }

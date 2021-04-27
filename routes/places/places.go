@@ -59,6 +59,10 @@ func GetPlaces(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(places)
 }
 
+func GetOnePlace(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func CreatePlace(w http.ResponseWriter, r *http.Request) {
 
 }

@@ -58,7 +58,7 @@ func GetPoses(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(poses)
 }
 
-func GetPos(w http.ResponseWriter, r *http.Request) {
+func GetOnePos(w http.ResponseWriter, r *http.Request) {
 
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 

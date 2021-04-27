@@ -21,25 +21,37 @@ var err error
 func GetAddr(w http.ResponseWriter, r *http.Request) {
 
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
 	if err != nil {
 		panic(err.Error())
 	}
+
 	defer db.Close()
 
 	w.Header().Set("Content-Type", "application/json")
+
 	var addrs []Addr
+
 	result, err := db.Query("SELECT idaddr, addr, lat, lng, postcode from addr ORDER BY `addr`")
+
 	if err != nil {
 		panic(err.Error())
 	}
+
 	defer result.Close()
+
 	for result.Next() {
+
 		var addr Addr
+
 		err := result.Scan(&addr.IDADDR, &addr.Addr, &addr.Lat, &addr.Lng, &addr.Postcode)
+
 		if err != nil {
 			panic(err.Error())
 		}
+
 		addrs = append(addrs, addr)
 	}
+
 	json.NewEncoder(w).Encode(addrs)
 }

@@ -125,57 +125,42 @@ func CreatePos(w http.ResponseWriter, r *http.Request) {
 
 	//получение параметра form-data
 
-	body, err := ioutil.ReadAll(r.Body)
+	// body, err := ioutil.ReadAll(r.Body)
 
-	if err != nil {
-		panic(err.Error())
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
+
+	// fmt.Printf("%s\n", string(body))
+
+	if r.Method != "POST" {
+		http.Error(w, http.StatusText(405), 405)
+		return
 	}
-
-	fmt.Printf("%s\n", string(body))
-
-	//keyVal := make(map[string]string)
-
-	//json.Unmarshal(body, &keyVal)
-
-	//fmt.Println(json.Unmarshal(body, &keyVal))
-
-	//pos := keyVal["pos"]
-	//fmt.Println(keyVal["pos"])
-
-	// var pos Pos
-	// if r.Body == nil {
-	// 	http.Error(w, "Please send a request body", 400)
-	// 	return
-	// }
-	// err = json.Unmarshal(body, &pos)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), 400)
-	// 	return
-	// }
-	// fmt.Println(pos.IDPOS)
-	// fmt.Println(pos.Pos)
-
-	// err = json.Unmarshal(body, &pos)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), 500)
-	// 	return
-	// }
-
-	//fmt.Println(output)
-
-	//stmt, err := db.Prepare("INSERT INTO pos(pos) VALUES(?)")
 
 	pos := r.FormValue("pos")
 
-	result, err := db.Prepare("INSERT INTO pos(pos) VALUES(?)")
+	fmt.Println(pos)
 
-	_, err = result.Exec(pos)
-
-	if err != nil {
-		panic(err.Error())
+	if pos == "" {
+		http.Error(w, http.StatusText(400), 400)
+		return
 	}
 
-	fmt.Fprintf(w, "New pos was created")
+	result, err := db.Exec("INSERT INTO pos VALUES($1)", pos)
+	if err != nil {
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+
+	fmt.Fprintf(w, "Book %s created successfully (%d row affected)\n", pos, rowsAffected)
+
 }
 
 func UpdatePos(w http.ResponseWriter, r *http.Request) {

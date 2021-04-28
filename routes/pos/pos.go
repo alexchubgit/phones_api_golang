@@ -112,16 +112,16 @@ func CreatePos(w http.ResponseWriter, r *http.Request) {
 
 	//x-www-form-urlencoded
 
-	r.ParseForm()
+	// r.ParseForm()
 
-	fmt.Printf("%+v\n", r.Form)
+	// fmt.Printf("%+v\n", r.Form)
 
-	for key, value := range r.Form {
-		fmt.Printf("%s = %s\n", key, value)
-	}
+	// for key, value := range r.Form {
+	// 	fmt.Printf("%s = %s\n", key, value)
+	// }
 
-	params := r.PostFormValue("pos")
-	fmt.Println(params)
+	// params := r.PostFormValue("pos")
+	// fmt.Println(params)
 
 	//получение параметра form-data
 
@@ -133,9 +133,9 @@ func CreatePos(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("%s\n", string(body))
 
-	keyVal := make(map[string]string)
+	//keyVal := make(map[string]string)
 
-	json.Unmarshal(body, &keyVal)
+	//json.Unmarshal(body, &keyVal)
 
 	//fmt.Println(json.Unmarshal(body, &keyVal))
 
@@ -165,17 +165,17 @@ func CreatePos(w http.ResponseWriter, r *http.Request) {
 
 	//stmt, err := db.Prepare("INSERT INTO pos(pos) VALUES(?)")
 
-	//if err != nil {
-	//	panic(err.Error())
-	//}
+	pos := r.FormValue("pos")
 
-	// _, err = stmt.Exec(pos)
+	result, err := db.Prepare("INSERT INTO pos(pos) VALUES(?)")
 
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
+	_, err = result.Exec(pos)
 
-	// fmt.Fprintf(w, "New pos was created")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	fmt.Fprintf(w, "New pos was created")
 }
 
 func UpdatePos(w http.ResponseWriter, r *http.Request) {

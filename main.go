@@ -47,6 +47,7 @@ func main() {
 	router.HandleFunc("/one_person/{idperson}", persons.GetOnePerson).Methods("GET")
 
 	router.HandleFunc("/login", auth.Login).Methods("POST")
+
 	router.HandleFunc("/pos", pos.CreatePos).Methods("POST")
 
 	router.HandleFunc("/pos/{idpos}", pos.UpdatePos).Methods("PUT")

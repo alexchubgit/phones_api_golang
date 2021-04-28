@@ -97,6 +97,11 @@ func GetOnePos(w http.ResponseWriter, r *http.Request) {
 
 func CreatePos(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
 	if err != nil {
@@ -105,11 +110,20 @@ func CreatePos(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT INTO pos(pos) VALUES(?)")
+	//x-www-form-urlencoded
 
-	if err != nil {
-		panic(err.Error())
+	r.ParseForm()
+
+	fmt.Printf("%+v\n", r.Form)
+
+	for key, value := range r.Form {
+		fmt.Printf("%s = %s\n", key, value)
 	}
+
+	params := r.PostFormValue("pos")
+	fmt.Println(params)
+
+	//получение параметра form-data
 
 	body, err := ioutil.ReadAll(r.Body)
 
@@ -117,19 +131,51 @@ func CreatePos(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 
+	fmt.Printf("%s\n", string(body))
+
 	keyVal := make(map[string]string)
 
 	json.Unmarshal(body, &keyVal)
 
-	pos := keyVal["pos"]
+	//fmt.Println(json.Unmarshal(body, &keyVal))
 
-	_, err = stmt.Exec(pos)
+	//pos := keyVal["pos"]
+	//fmt.Println(keyVal["pos"])
 
-	if err != nil {
-		panic(err.Error())
-	}
+	// var pos Pos
+	// if r.Body == nil {
+	// 	http.Error(w, "Please send a request body", 400)
+	// 	return
+	// }
+	// err = json.Unmarshal(body, &pos)
+	// if err != nil {
+	// 	http.Error(w, err.Error(), 400)
+	// 	return
+	// }
+	// fmt.Println(pos.IDPOS)
+	// fmt.Println(pos.Pos)
 
-	fmt.Fprintf(w, "New pos was created")
+	// err = json.Unmarshal(body, &pos)
+	// if err != nil {
+	// 	http.Error(w, err.Error(), 500)
+	// 	return
+	// }
+
+	//fmt.Println(output)
+
+	//stmt, err := db.Prepare("INSERT INTO pos(pos) VALUES(?)")
+
+	//if err != nil {
+	//	panic(err.Error())
+	//}
+
+	// _, err = stmt.Exec(pos)
+
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
+
+	// fmt.Fprintf(w, "New pos was created")
 }
 
 func UpdatePos(w http.ResponseWriter, r *http.Request) {

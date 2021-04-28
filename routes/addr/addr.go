@@ -3,6 +3,8 @@ package addr
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 )
@@ -77,6 +79,33 @@ func CreateAddr(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
+
+	stmt, err := db.Prepare("INSERT INTO addr(addr, lat, lng, postcode) VALUES(?, ?, ?, ?)")
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	body, err := ioutil.ReadAll(r.Body)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	keyVal := make(map[string]string)
+
+	json.Unmarshal(body, &keyVal)
+
+	addr := keyVal["addr"]
+
+	_, err = stmt.Exec(addr)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	fmt.Fprintf(w, "New address was created")
+
 }
 
 func UpdateAddr(w http.ResponseWriter, r *http.Request) {

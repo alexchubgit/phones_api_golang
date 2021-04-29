@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -70,10 +71,20 @@ func GetOnePos(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	params := mux.Vars(r)
-	fmt.Println(params)
+	idpos, err := strconv.Atoi(r.URL.Query().Get("idpos"))
+	if err != nil || idpos < 1 {
+		http.NotFound(w, r)
+		return
+	}
+	fmt.Println(idpos)
 
-	result, err := db.Query("SELECT idpos, pos FROM pos WHERE idpos = ?", params["idpos"])
+	//idpos := r.URL.Query().Get("idpos")
+
+	// params := mux.Vars(r)
+	// fmt.Println(params)
+
+	//result, err := db.Query("SELECT idpos, pos FROM pos WHERE idpos = ?", params["idpos"])
+	result, err := db.Query("SELECT idpos, pos FROM pos WHERE idpos = ?", idpos)
 
 	if err != nil {
 		panic(err.Error())
@@ -99,9 +110,9 @@ func CreatePos(w http.ResponseWriter, r *http.Request) {
 
 	//w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	// w.Header().Set("Access-Control-Allow-Origin", "*")
+	// w.Header().Set("Access-Control-Allow-Methods", "POST")
+	// w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	//x-www-form-urlencoded
 
@@ -118,16 +129,16 @@ func CreatePos(w http.ResponseWriter, r *http.Request) {
 
 	//получение параметра form-data
 
-	body, err := ioutil.ReadAll(r.Body)
+	// body, err := ioutil.ReadAll(r.Body)
 
-	if err != nil {
-		panic(err.Error())
-	}
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
 
-	keyVal := make(map[string]string)
-	json.Unmarshal(body, &keyVal)
-	pos := keyVal["pos"]
-	fmt.Println(pos)
+	// keyVal := make(map[string]string)
+	// json.Unmarshal(body, &keyVal)
+	// pos := keyVal["pos"]
+	// fmt.Println(pos)
 
 	// fmt.Printf("%s\n", string(body))
 

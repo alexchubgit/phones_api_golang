@@ -25,9 +25,21 @@ import (
 // loads values from .env into the system
 
 func init() {
+
 	if err := godotenv.Load(".env"); err != nil {
 		log.Print("File .env not found")
 	}
+
+	// var db *sql.DB
+	// var err error
+
+	// db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
+
+	// defer db.Close()
 }
 
 func main() {

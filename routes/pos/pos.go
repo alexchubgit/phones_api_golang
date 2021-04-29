@@ -102,14 +102,6 @@ func CreatePos(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Methods", "POST")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
-
-	if err != nil {
-		panic(err.Error())
-	}
-
-	defer db.Close()
-
 	//x-www-form-urlencoded
 
 	// r.ParseForm()

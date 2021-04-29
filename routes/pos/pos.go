@@ -97,7 +97,8 @@ func GetOnePos(w http.ResponseWriter, r *http.Request) {
 
 func CreatePos(w http.ResponseWriter, r *http.Request) {
 
-	w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
+	//w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
+	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
@@ -117,41 +118,46 @@ func CreatePos(w http.ResponseWriter, r *http.Request) {
 
 	//получение параметра form-data
 
-	// body, err := ioutil.ReadAll(r.Body)
+	body, err := ioutil.ReadAll(r.Body)
 
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
+	if err != nil {
+		panic(err.Error())
+	}
+
+	keyVal := make(map[string]string)
+	json.Unmarshal(body, &keyVal)
+	pos := keyVal["pos"]
+	fmt.Println(pos)
 
 	// fmt.Printf("%s\n", string(body))
 
-	if r.Method != "POST" {
-		http.Error(w, http.StatusText(405), 405)
-		return
-	}
+	// if r.Method != "POST" {
+	// 	http.Error(w, http.StatusText(405), 405)
+	// 	return
+	// }
 
-	pos := r.FormValue("pos")
+	// pos := r.FormValue("pos")
 
-	fmt.Println(pos)
+	// fmt.Println(pos)
 
-	if pos == "" {
-		http.Error(w, http.StatusText(400), 400)
-		return
-	}
+	// if pos == "" {
+	// 	http.Error(w, http.StatusText(400), 400)
+	// 	return
+	// }
 
-	result, err := db.Exec("INSERT INTO pos VALUES($1)", pos)
-	if err != nil {
-		http.Error(w, http.StatusText(500), 500)
-		return
-	}
+	// result, err := db.Exec("INSERT INTO pos VALUES($1)", pos)
+	// if err != nil {
+	// 	http.Error(w, http.StatusText(500), 500)
+	// 	return
+	// }
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		http.Error(w, http.StatusText(500), 500)
-		return
-	}
+	// rowsAffected, err := result.RowsAffected()
+	// if err != nil {
+	// 	http.Error(w, http.StatusText(500), 500)
+	// 	return
+	// }
 
-	fmt.Fprintf(w, "Book %s created successfully (%d row affected)\n", pos, rowsAffected)
+	// fmt.Fprintf(w, "Book %s created successfully (%d row affected)\n", pos, rowsAffected)
 
 }
 

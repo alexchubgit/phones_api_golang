@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -21,6 +22,12 @@ import (
 	"alexchubgit/api/routes/auth"
 )
 
+var (
+	WarningLogger *log.Logger
+	InfoLogger    *log.Logger
+	ErrorLogger   *log.Logger
+)
+
 // init is invoked before main()
 // loads values from .env into the system
 
@@ -30,19 +37,23 @@ func init() {
 		log.Print("File .env not found")
 	}
 
-	// var db *sql.DB
-	// var err error
+	//логирование
+	file, err := os.OpenFile("logs.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
-
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
-
-	// defer db.Close()
+	InfoLogger = log.New(file, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+	WarningLogger = log.New(file, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
+	ErrorLogger = log.New(file, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
 func main() {
+
+	InfoLogger.Println("Starting the application...")
+	//InfoLogger.Println("Something noteworthy happened")
+	//WarningLogger.Println("There is something you should know about")
+	//ErrorLogger.Println("Something went wrong")
 
 	router := mux.NewRouter()
 
@@ -55,14 +66,14 @@ func main() {
 	router.HandleFunc("/docs", docs.GetDocs).Methods("GET")
 
 	router.HandleFunc("/one_dep/{iddep}", dep.GetOneDep).Methods("GET")
+	router.HandleFunc("/one_pos/{idpos}", pos.GetOnePos).Methods("GET")
 	router.HandleFunc("/persons/{iddep}", persons.GetPersons).Methods("GET")
 	router.HandleFunc("/one_person/{idperson}", persons.GetOnePerson).Methods("GET")
 
 	router.HandleFunc("/login", auth.Login).Methods("POST")
 
 	router.HandleFunc("/pos", pos.CreatePos).Methods("POST")
-
-	router.HandleFunc("/pos/{idpos}", pos.UpdatePos).Methods("PUT")
+	router.HandleFunc("/pos", pos.UpdatePos).Methods("PUT")
 
 	router.HandleFunc("/pos/{idpos}", pos.DeletePos).Methods("DELETE")
 

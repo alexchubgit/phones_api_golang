@@ -72,18 +72,12 @@ func GetOnePos(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	idpos, err := strconv.Atoi(r.URL.Query().Get("idpos"))
+
 	if err != nil || idpos < 1 {
 		http.NotFound(w, r)
 		return
 	}
-	fmt.Println(idpos)
 
-	//idpos := r.URL.Query().Get("idpos")
-
-	// params := mux.Vars(r)
-	// fmt.Println(params)
-
-	//result, err := db.Query("SELECT idpos, pos FROM pos WHERE idpos = ?", params["idpos"])
 	result, err := db.Query("SELECT idpos, pos FROM pos WHERE idpos = ?", idpos)
 
 	if err != nil {
@@ -104,6 +98,44 @@ func GetOnePos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(pos)
+}
+
+func DeletePos(w http.ResponseWriter, r *http.Request) {
+
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
+
+	//params := mux.Vars(r)
+
+	idpos, err := strconv.Atoi(r.URL.Query().Get("idpos"))
+
+	if err != nil || idpos < 1 {
+		http.NotFound(w, r)
+		return
+	}
+
+	stmt, err := db.Prepare("DELETE FROM pos WHERE idpos = ?")
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	//_, err = stmt.Exec(params["idpos"])
+
+	_, err = stmt.Exec(idpos)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	//fmt.Fprintf(w, "Pos with ID = %s was deleted", params["idpos"])
+
+	fmt.Fprintf(w, "Pos with ID = %s was deleted", strconv.Itoa(idpos))
 }
 
 func CreatePos(w http.ResponseWriter, r *http.Request) {
@@ -211,29 +243,8 @@ func UpdatePos(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Pos with ID = %s was updated", params["idpos"])
 }
 
-func DeletePos(w http.ResponseWriter, r *http.Request) {
-
-	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
-
-	if err != nil {
-		panic(err.Error())
-	}
-
-	defer db.Close()
-
-	params := mux.Vars(r)
-
-	stmt, err := db.Prepare("DELETE FROM pos WHERE idpos = ?")
-
-	if err != nil {
-		panic(err.Error())
-	}
-
-	_, err = stmt.Exec(params["idpos"])
-
-	if err != nil {
-		panic(err.Error())
-	}
-
-	fmt.Fprintf(w, "Pos with ID = %s was deleted", params["idpos"])
-}
+//fmt.Println(idpos)
+//idpos := r.URL.Query().Get("idpos")
+// params := mux.Vars(r)
+// fmt.Println(params)
+//result, err := db.Query("SELECT idpos, pos FROM pos WHERE idpos = ?", params["idpos"])

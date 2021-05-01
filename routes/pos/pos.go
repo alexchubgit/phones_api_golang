@@ -4,13 +4,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	//"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/mux"
+	//"github.com/gorilla/mux"
 )
 
 type Pos struct {
@@ -146,6 +146,41 @@ func CreatePos(w http.ResponseWriter, r *http.Request) {
 	// w.Header().Set("Access-Control-Allow-Methods", "POST")
 	// w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
+
+	if r.Method != "POST" {
+		fmt.Println("Not Post")
+		return
+	}
+
+	pos := r.FormValue("pos")
+	fmt.Println(pos)
+
+	if pos == "" {
+		fmt.Println("Feild is empty")
+
+	}
+
+	result, err := db.Exec("INSERT INTO pos(pos) VALUES(455555)")
+	if err != nil {
+		panic(err)
+
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		panic(err)
+
+	}
+
+	fmt.Fprintf(w, "Book %s created successfully (%d row affected)\n", pos, rowsAffected)
+
 	//x-www-form-urlencoded
 
 	// r.ParseForm()
@@ -206,41 +241,44 @@ func CreatePos(w http.ResponseWriter, r *http.Request) {
 
 func UpdatePos(w http.ResponseWriter, r *http.Request) {
 
-	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+	w.Header().Set("Content-Type", "application/json")
 
-	if err != nil {
-		panic(err.Error())
-	}
+	// db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
-	defer db.Close()
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
 
-	params := mux.Vars(r)
+	// defer db.Close()
 
-	stmt, err := db.Prepare("UPDATE pos SET pos = ? WHERE idpos = ?")
+	//params := mux.Vars(r)
+	//fmt.Println(params)
 
-	if err != nil {
-		panic(err.Error())
-	}
+	// stmt, err := db.Prepare("UPDATE pos SET pos = ? WHERE idpos = ?")
 
-	body, err := ioutil.ReadAll(r.Body)
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
 
-	if err != nil {
-		panic(err.Error())
-	}
+	// body, err := ioutil.ReadAll(r.Body)
 
-	keyVal := make(map[string]string)
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
 
-	json.Unmarshal(body, &keyVal)
+	// keyVal := make(map[string]string)
 
-	newPos := keyVal["pos"]
+	// json.Unmarshal(body, &keyVal)
 
-	_, err = stmt.Exec(newPos, params["idpos"])
+	// newPos := keyVal["pos"]
 
-	if err != nil {
-		panic(err.Error())
-	}
+	// _, err = stmt.Exec(newPos, params["idpos"])
 
-	fmt.Fprintf(w, "Pos with ID = %s was updated", params["idpos"])
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
+
+	// fmt.Fprintf(w, "Pos with ID = %s was updated", params["idpos"])
 }
 
 //fmt.Println(idpos)

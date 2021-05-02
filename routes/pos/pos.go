@@ -4,13 +4,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	//"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
 
 	_ "github.com/go-sql-driver/mysql"
-	//"github.com/gorilla/mux"
 )
 
 type Pos struct {
@@ -23,6 +22,8 @@ var err error
 
 func GetPoses(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Content-Type", "application/json")
+
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
 	if err != nil {
@@ -30,8 +31,6 @@ func GetPoses(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
-
-	w.Header().Set("Content-Type", "application/json")
 
 	var poses []Pos
 
@@ -61,6 +60,8 @@ func GetPoses(w http.ResponseWriter, r *http.Request) {
 
 func GetOnePos(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Content-Type", "application/json")
+
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
 	if err != nil {
@@ -68,8 +69,6 @@ func GetOnePos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
-
-	w.Header().Set("Content-Type", "application/json")
 
 	idpos, err := strconv.Atoi(r.URL.Query().Get("idpos"))
 
@@ -102,6 +101,8 @@ func GetOnePos(w http.ResponseWriter, r *http.Request) {
 
 func DeletePos(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Content-Type", "application/json")
+
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
 	if err != nil {
@@ -109,8 +110,6 @@ func DeletePos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
-
-	//params := mux.Vars(r)
 
 	idpos, err := strconv.Atoi(r.URL.Query().Get("idpos"))
 
@@ -125,26 +124,21 @@ func DeletePos(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 
-	//_, err = stmt.Exec(params["idpos"])
-
 	_, err = stmt.Exec(idpos)
 
 	if err != nil {
 		panic(err.Error())
 	}
 
-	//fmt.Fprintf(w, "Pos with ID = %s was deleted", params["idpos"])
-
 	fmt.Fprintf(w, "Pos with ID = %s was deleted", strconv.Itoa(idpos))
 }
 
 func CreatePos(w http.ResponseWriter, r *http.Request) {
 
-	//w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
 	w.Header().Set("Content-Type", "application/json")
-	// w.Header().Set("Access-Control-Allow-Origin", "*")
-	// w.Header().Set("Access-Control-Allow-Methods", "POST")
-	// w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
@@ -167,118 +161,54 @@ func CreatePos(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	result, err := db.Exec("INSERT INTO pos(pos) VALUES(455555)")
+	res, err := db.Exec("INSERT INTO pos(pos) VALUES(?)", pos)
 	if err != nil {
 		panic(err)
-
 	}
 
-	rowsAffected, err := result.RowsAffected()
+	lastId, err := res.LastInsertId()
+
 	if err != nil {
-		panic(err)
-
+		log.Fatal(err)
 	}
 
-	fmt.Fprintf(w, "Book %s created successfully (%d row affected)\n", pos, rowsAffected)
-
-	//x-www-form-urlencoded
-
-	// r.ParseForm()
-
-	// fmt.Printf("%+v\n", r.Form)
-
-	// for key, value := range r.Form {
-	// 	fmt.Printf("%s = %s\n", key, value)
-	// }
-
-	// params := r.PostFormValue("pos")
-	// fmt.Println(params)
-
-	//получение параметра form-data
-
-	// body, err := ioutil.ReadAll(r.Body)
-
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
-
-	// keyVal := make(map[string]string)
-	// json.Unmarshal(body, &keyVal)
-	// pos := keyVal["pos"]
-	// fmt.Println(pos)
-
-	// fmt.Printf("%s\n", string(body))
-
-	// if r.Method != "POST" {
-	// 	http.Error(w, http.StatusText(405), 405)
-	// 	return
-	// }
-
-	// pos := r.FormValue("pos")
-
-	// fmt.Println(pos)
-
-	// if pos == "" {
-	// 	http.Error(w, http.StatusText(400), 400)
-	// 	return
-	// }
-
-	// result, err := db.Exec("INSERT INTO pos VALUES($1)", pos)
-	// if err != nil {
-	// 	http.Error(w, http.StatusText(500), 500)
-	// 	return
-	// }
-
-	// rowsAffected, err := result.RowsAffected()
-	// if err != nil {
-	// 	http.Error(w, http.StatusText(500), 500)
-	// 	return
-	// }
-
-	// fmt.Fprintf(w, "Book %s created successfully (%d row affected)\n", pos, rowsAffected)
+	fmt.Printf("The last inserted row id: %d\n", lastId)
 
 }
 
 func UpdatePos(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "PUT")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-	// db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
+	if err != nil {
+		panic(err.Error())
+	}
 
-	// defer db.Close()
+	defer db.Close()
 
-	//params := mux.Vars(r)
-	//fmt.Println(params)
+	if r.Method != "PUT" {
+		fmt.Println("Not PUT")
+		return
+	}
 
-	// stmt, err := db.Prepare("UPDATE pos SET pos = ? WHERE idpos = ?")
+	pos := r.FormValue("pos")
+	idpos := r.FormValue("idpos")
 
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
+	fmt.Println(idpos)
+	fmt.Println(pos)
 
-	// body, err := ioutil.ReadAll(r.Body)
+	_, err := db.Exec("UPDATE pos SET pos = ? WHERE idpos = ?", pos, idpos)
 
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
+	if err != nil {
+		panic(err.Error())
+	}
 
-	// keyVal := make(map[string]string)
-
-	// json.Unmarshal(body, &keyVal)
-
-	// newPos := keyVal["pos"]
-
-	// _, err = stmt.Exec(newPos, params["idpos"])
-
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
-
-	// fmt.Fprintf(w, "Pos with ID = %s was updated", params["idpos"])
+	fmt.Fprintf(w, "Pos with ID = %s was updated", idpos)
 }
 
 //fmt.Println(idpos)
@@ -286,3 +216,61 @@ func UpdatePos(w http.ResponseWriter, r *http.Request) {
 // params := mux.Vars(r)
 // fmt.Println(params)
 //result, err := db.Query("SELECT idpos, pos FROM pos WHERE idpos = ?", params["idpos"])
+
+//x-www-form-urlencoded
+
+// r.ParseForm()
+
+// fmt.Printf("%+v\n", r.Form)
+
+// for key, value := range r.Form {
+// 	fmt.Printf("%s = %s\n", key, value)
+// }
+
+// params := r.PostFormValue("pos")
+// fmt.Println(params)
+
+//получение параметра form-data
+
+// body, err := ioutil.ReadAll(r.Body)
+
+// if err != nil {
+// 	panic(err.Error())
+// }
+
+// keyVal := make(map[string]string)
+// json.Unmarshal(body, &keyVal)
+// pos := keyVal["pos"]
+// fmt.Println(pos)
+
+// fmt.Printf("%s\n", string(body))
+
+// if r.Method != "POST" {
+// 	http.Error(w, http.StatusText(405), 405)
+// 	return
+// }
+
+// pos := r.FormValue("pos")
+
+// fmt.Println(pos)
+
+// if pos == "" {
+// 	http.Error(w, http.StatusText(400), 400)
+// 	return
+// }
+
+// result, err := db.Exec("INSERT INTO pos VALUES($1)", pos)
+// if err != nil {
+// 	http.Error(w, http.StatusText(500), 500)
+// 	return
+// }
+
+// rowsAffected, err := result.RowsAffected()
+// if err != nil {
+// 	http.Error(w, http.StatusText(500), 500)
+// 	return
+// }
+
+// fmt.Fprintf(w, "Book %s created successfully (%d row affected)\n", pos, rowsAffected)
+
+//w.Header().Set("Context-Type", "application/x-www-form-urlencoded")

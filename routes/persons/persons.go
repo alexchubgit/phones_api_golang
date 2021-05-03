@@ -1,11 +1,16 @@
 package persons
 
 import (
+	//"crypto/md5"
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	//"html/template"
+	"io"
 	"net/http"
 	"os"
+	//"strconv"
+	//"time"
 
 	"github.com/gorilla/mux"
 )
@@ -104,7 +109,7 @@ func GetOnePerson(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(person)
 }
 
-func CreatePerson(w http.ResponseWriter, r *http.Request) {
+func DeletePerson(w http.ResponseWriter, r *http.Request) {
 
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
@@ -113,20 +118,73 @@ func CreatePerson(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
+}
+
+func CreatePerson(w http.ResponseWriter, r *http.Request) {
+
+	// db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
+
+	// defer db.Close()
+
+	fmt.Println("method:", r.Method)
+
+	if r.Method == "GET" {
+
+		// crutime := time.Now().Unix()
+
+		// h := md5.New()
+
+		// io.WriteString(h, strconv.FormatInt(crutime, 10))
+
+		// token := fmt.Sprintf("%x", h.Sum(nil))
+
+		// t, _ := template.ParseFiles("upload.gtpl")
+
+		// t.Execute(w, token)
+
+	} else {
+
+		if err := r.ParseMultipartForm(32 << 20); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		file, handler, err := r.FormFile("file")
+
+		fmt.Println(r.FormValue("name"))
+		fmt.Println(r.FormValue("date"))
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		defer file.Close()
+
+		fmt.Fprintf(w, "%v", handler.Header)
+		fmt.Printf("Uploaded File: %+v\n", handler.Filename)
+		fmt.Printf("File Size: %+v\n", handler.Size)
+		fmt.Printf("MIME Header: %+v\n", handler.Header)
+
+		f, err := os.OpenFile("./test/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		defer f.Close()
+
+		io.Copy(f, file)
+	}
+
 }
 
 func UpdatePerson(w http.ResponseWriter, r *http.Request) {
-
-	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
-
-	if err != nil {
-		panic(err.Error())
-	}
-
-	defer db.Close()
-}
-
-func DeletePerson(w http.ResponseWriter, r *http.Request) {
 
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 

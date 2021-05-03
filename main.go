@@ -65,10 +65,12 @@ func main() {
 	router.HandleFunc("/docs", docs.GetDocs).Methods("GET")
 
 	router.HandleFunc("/one_dep/{iddep}", dep.GetOneDep).Methods("GET")
-	router.HandleFunc("/persons/{iddep}", persons.GetPersons).Methods("GET")
-	router.HandleFunc("/one_person/{idperson}", persons.GetOnePerson).Methods("GET")
 
 	router.HandleFunc("/login", auth.Login).Methods("POST")
+
+	router.HandleFunc("/persons/{iddep}", persons.GetPersons).Methods("GET")
+	router.HandleFunc("/one_person/{idperson}", persons.GetOnePerson).Methods("GET")
+	router.HandleFunc("/add_person", persons.CreatePerson).Methods("POST")
 
 	router.HandleFunc("/pos", pos.GetPoses).Methods("GET")
 	router.HandleFunc("/one_pos", pos.GetOnePos).Methods("GET")

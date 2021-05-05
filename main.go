@@ -61,6 +61,8 @@ func main() {
 	router.HandleFunc("/login", auth.Login).Methods("POST")
 
 	router.HandleFunc("/addr", addr.GetAddr).Methods("GET")
+	router.HandleFunc("/one_addr", addr.GetOneAddr).Methods("GET")
+	router.HandleFunc("/list_addr", addr.GetListAddr).Methods("GET")
 
 	router.HandleFunc("/certs", certs.GetCert).Methods("GET")
 	router.HandleFunc("/docs", docs.GetDocs).Methods("GET")

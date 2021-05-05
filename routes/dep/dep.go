@@ -145,3 +145,10 @@ func DeleteDep(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 }
+
+//"SELECT * FROM depart ORDER BY `sdep`"
+//'SELECT depart.*, addr.*, parent.sdep AS parent, parent.iddep AS idparent, COUNT(idperson) AS count FROM depart LEFT JOIN addr USING(idaddr) LEFT JOIN persons USING(iddep) LEFT JOIN depart AS parent ON depart.idparent=parent.iddep WHERE depart.iddep like ' + iddep + ' LIMIT 1'
+//'SELECT * FROM depart WHERE sdep like "%' + query + '%" LIMIT 5'
+//'INSERT INTO depart (depart , sdep, email, idaddr, idparent) VALUES (?, ?, ?, ?, ?)', [dep, sdep, email, idaddr, idparent]
+//'UPDATE depart SET depart="' + dep + '", sdep="' + sdep + '", email="' + email + '", idaddr="' + idaddr + '", idparent="' + idparent + '" WHERE iddep="' + iddep + '"'
+//'DELETE FROM depart WHERE iddep = "' + iddep + '"'

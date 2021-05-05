@@ -122,14 +122,39 @@ func GetListAddr(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
-	idaddr, err := strconv.Atoi(r.URL.Query().Get("idaddr"))
+	query := r.URL.Query().Get("query")
 
-	if err != nil || idaddr < 1 {
-		http.NotFound(w, r)
-		return
+	// query, err := strconv.Atoi(r.URL.Query().Get("query"))
+
+	// if err != nil {
+	// 	http.NotFound(w, r)
+	// 	return
+	// }
+
+	var addrs []Addr
+
+	result, err := db.Query("SELECT idaddr, addr, lat, lng, postcode from addr WHERE addr like concat('%', ?, '%') LIMIT 5", query)
+
+	if err != nil {
+		panic(err.Error())
 	}
 
-	//'SELECT * FROM addr WHERE addr like "%' + query + '%" LIMIT 5'
+	defer result.Close()
+
+	for result.Next() {
+
+		var addr Addr
+
+		err := result.Scan(&addr.IDADDR, &addr.Addr, &addr.Lat, &addr.Lng, &addr.Postcode)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		addrs = append(addrs, addr)
+	}
+
+	json.NewEncoder(w).Encode(addrs)
 
 }
 

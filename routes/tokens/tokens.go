@@ -2,6 +2,7 @@ package tokens
 
 import (
 	"database/sql"
+	"encoding/json"
 	"net/http"
 	"os"
 )
@@ -18,6 +19,11 @@ var err error
 
 func GetTokens(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
 	if err != nil {
@@ -26,8 +32,30 @@ func GetTokens(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
-	w.Header().Set("Content-Type", "application/json")
+	var tokens []Token
 
+	result, err := db.Query("SELECT idtoken, number, idowner, status from tokens ORDER BY `number`")
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer result.Close()
+
+	for result.Next() {
+
+		var token Token
+
+		err := result.Scan(&token.IDTOKEN, &token.Number, &token.Status, &token.Idowner)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		tokens = append(tokens, token)
+	}
+
+	json.NewEncoder(w).Encode(tokens)
 }
 
 func CreateToken(w http.ResponseWriter, r *http.Request) {

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 type Place struct {
@@ -23,6 +24,11 @@ var err error
 
 func GetPlaces(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
 	if err != nil {
@@ -31,11 +37,9 @@ func GetPlaces(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
-	w.Header().Set("Content-Type", "application/json")
-
 	var places []Place
 
-	result, err := db.Query("SELECT idplace, place from places")
+	result, err := db.Query("SELECT idplace, place, work, internal, ipphone, arm, idperson, idaddr from places")
 
 	if err != nil {
 		panic(err.Error())
@@ -47,7 +51,7 @@ func GetPlaces(w http.ResponseWriter, r *http.Request) {
 
 		var place Place
 
-		err := result.Scan(&place.IDPLACE, &place.Place)
+		err := result.Scan(&place.IDPLACE, &place.Place, &place.Work, &place.Internal, &place.Ipphone, &place.Arm, &place.Idperson, &place.Idaddr)
 
 		if err != nil {
 			panic(err.Error())
@@ -61,6 +65,11 @@ func GetPlaces(w http.ResponseWriter, r *http.Request) {
 
 func GetOnePlace(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
 	if err != nil {
@@ -68,6 +77,34 @@ func GetOnePlace(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
+
+	idplace, err := strconv.Atoi(r.URL.Query().Get("idplace"))
+
+	if err != nil || idplace < 1 {
+		http.NotFound(w, r)
+		return
+	}
+
+	result, err := db.Query("SELECT idplace, place, work, internal, ipphone, arm, idperson, idaddr from places WHERE idplace = ?", idplace)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer result.Close()
+
+	var place Place
+
+	for result.Next() {
+
+		err := result.Scan(&place.IDPLACE, &place.Place, &place.Work, &place.Internal, &place.Ipphone, &place.Arm, &place.Idperson, &place.Idaddr)
+
+		if err != nil {
+			panic(err.Error())
+		}
+	}
+
+	json.NewEncoder(w).Encode(place)
 }
 
 func CreatePlace(w http.ResponseWriter, r *http.Request) {

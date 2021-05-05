@@ -23,6 +23,9 @@ var err error
 func GetPoses(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
@@ -61,6 +64,9 @@ func GetPoses(w http.ResponseWriter, r *http.Request) {
 func GetOnePos(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
@@ -102,6 +108,9 @@ func GetOnePos(w http.ResponseWriter, r *http.Request) {
 func DeletePos(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 

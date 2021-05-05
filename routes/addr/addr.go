@@ -3,10 +3,11 @@ package addr
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
+	//"fmt"
+	//"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 type Addr struct {
@@ -22,6 +23,11 @@ var err error
 
 func GetAddr(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
 	if err != nil {
@@ -29,8 +35,6 @@ func GetAddr(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
-
-	w.Header().Set("Content-Type", "application/json")
 
 	var addrs []Addr
 
@@ -60,6 +64,11 @@ func GetAddr(w http.ResponseWriter, r *http.Request) {
 
 func GetOneAddr(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
 	if err != nil {
@@ -68,6 +77,34 @@ func GetOneAddr(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
+	idaddr, err := strconv.Atoi(r.URL.Query().Get("idaddr"))
+
+	if err != nil || idaddr < 1 {
+		http.NotFound(w, r)
+		return
+	}
+
+	result, err := db.Query("SELECT idaddr, addr, lat, lng, postcode from addr  WHERE idaddr = ? ORDER BY `addr`", idaddr)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer result.Close()
+
+	var addr Addr
+
+	for result.Next() {
+
+		err := result.Scan(&addr.IDADDR, &addr.Addr, &addr.Lat, &addr.Lng, &addr.Postcode)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+	}
+
+	json.NewEncoder(w).Encode(addr)
 }
 
 func CreateAddr(w http.ResponseWriter, r *http.Request) {
@@ -80,31 +117,31 @@ func CreateAddr(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT INTO addr(addr, lat, lng, postcode) VALUES(?, ?, ?, ?)")
+	// stmt, err := db.Prepare("INSERT INTO addr(addr, lat, lng, postcode) VALUES(?, ?, ?, ?)")
 
-	if err != nil {
-		panic(err.Error())
-	}
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
 
-	body, err := ioutil.ReadAll(r.Body)
+	// body, err := ioutil.ReadAll(r.Body)
 
-	if err != nil {
-		panic(err.Error())
-	}
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
 
-	keyVal := make(map[string]string)
+	// keyVal := make(map[string]string)
 
-	json.Unmarshal(body, &keyVal)
+	// json.Unmarshal(body, &keyVal)
 
-	addr := keyVal["addr"]
+	// addr := keyVal["addr"]
 
-	_, err = stmt.Exec(addr)
+	// _, err = stmt.Exec(addr)
 
-	if err != nil {
-		panic(err.Error())
-	}
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
 
-	fmt.Fprintf(w, "New address was created")
+	// fmt.Fprintf(w, "New address was created")
 
 }
 

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 type Rank struct {
@@ -17,6 +18,11 @@ var err error
 
 func GetRanks(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
 	if err != nil {
@@ -24,8 +30,6 @@ func GetRanks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
-
-	w.Header().Set("Content-Type", "application/json")
 
 	var ranks []Rank
 
@@ -55,6 +59,50 @@ func GetRanks(w http.ResponseWriter, r *http.Request) {
 
 func GetOneRank(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
+
+	idrank, err := strconv.Atoi(r.URL.Query().Get("idrank"))
+
+	if err != nil || idrank < 1 {
+		http.NotFound(w, r)
+		return
+	}
+
+	result, err := db.Query("SELECT idrank, rank FROM ranks WHERE idrank = ?", idrank)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer result.Close()
+
+	var rank Rank
+
+	for result.Next() {
+
+		err := result.Scan(&rank.IDRANK, &rank.Rank)
+
+		if err != nil {
+			panic(err.Error())
+		}
+	}
+
+	json.NewEncoder(w).Encode(rank)
+}
+
+func DeleteRank(w http.ResponseWriter, r *http.Request) {
+
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
 	if err != nil {
@@ -76,17 +124,6 @@ func CreateRank(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateRank(w http.ResponseWriter, r *http.Request) {
-
-	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
-
-	if err != nil {
-		panic(err.Error())
-	}
-
-	defer db.Close()
-}
-
-func DeleteRank(w http.ResponseWriter, r *http.Request) {
 
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 

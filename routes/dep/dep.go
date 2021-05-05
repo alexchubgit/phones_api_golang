@@ -3,11 +3,11 @@ package dep
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
+	//"fmt"
 	"net/http"
 	"os"
-
-	"github.com/gorilla/mux"
+	"strconv"
+	//"github.com/gorilla/mux"
 )
 
 type Dep struct {
@@ -25,6 +25,11 @@ var err error
 
 func GetDeps(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
 	if err != nil {
@@ -32,8 +37,6 @@ func GetDeps(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
-
-	w.Header().Set("Content-Type", "application/json")
 
 	var deps []Dep
 
@@ -63,6 +66,11 @@ func GetDeps(w http.ResponseWriter, r *http.Request) {
 
 func GetOneDep(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
 	if err != nil {
@@ -71,13 +79,18 @@ func GetOneDep(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
-	w.Header().Set("Content-Type", "application/json")
+	iddep, err := strconv.Atoi(r.URL.Query().Get("iddep"))
 
-	params := mux.Vars(r)
+	if err != nil || iddep < 1 {
+		http.NotFound(w, r)
+		return
+	}
+
+	//params := mux.Vars(r)
 	//vals := r.URL.Query()
-	fmt.Println(params)
+	//fmt.Println(params)
 
-	result, err := db.Query("SELECT iddep, depart, sdep, email, abbr, idparent FROM depart WHERE iddep = ?", params["iddep"])
+	result, err := db.Query("SELECT iddep, depart, sdep, email, abbr, idparent FROM depart WHERE iddep = ?", iddep)
 
 	if err != nil {
 		panic(err.Error())

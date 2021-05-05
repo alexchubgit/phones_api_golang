@@ -9,10 +9,9 @@ import (
 	"io"
 	"net/http"
 	"os"
-	//"strconv"
+	"strconv"
 	//"time"
-
-	"github.com/gorilla/mux"
+	//"github.com/gorilla/mux"
 )
 
 type Person struct {
@@ -34,6 +33,11 @@ var err error
 
 func GetPersons(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
 	if err != nil {
@@ -42,14 +46,16 @@ func GetPersons(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
-	w.Header().Set("Content-Type", "application/json")
+	iddep, err := strconv.Atoi(r.URL.Query().Get("iddep"))
 
-	params := mux.Vars(r)
-	fmt.Println(params)
+	if err != nil || iddep < 1 {
+		http.NotFound(w, r)
+		return
+	}
 
 	var persons []Person
 
-	result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, iddep, idpos, idrank, idrole FROM persons WHERE iddep like ? ORDER BY `name`", params["iddep"])
+	result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, iddep, idpos, idrank, idrole FROM persons WHERE iddep like ? ORDER BY `name`", iddep)
 
 	if err != nil {
 		panic(err.Error())
@@ -76,6 +82,11 @@ func GetPersons(w http.ResponseWriter, r *http.Request) {
 
 func GetOnePerson(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
 	if err != nil {
@@ -84,12 +95,14 @@ func GetOnePerson(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
-	w.Header().Set("Content-Type", "application/json")
+	idperson, err := strconv.Atoi(r.URL.Query().Get("idperson"))
 
-	params := mux.Vars(r)
-	fmt.Println(params)
+	if err != nil || idperson < 1 {
+		http.NotFound(w, r)
+		return
+	}
 
-	result, err := db.Query("SELECT idperson, name, date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, iddep, idpos, idrank, idrole FROM persons WHERE idperson = ?", params["idperson"])
+	result, err := db.Query("SELECT idperson, name, date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, iddep, idpos, idrank, idrole FROM persons WHERE idperson = ?", idperson)
 
 	if err != nil {
 		panic(err.Error())

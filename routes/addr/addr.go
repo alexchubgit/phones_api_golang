@@ -84,7 +84,7 @@ func GetOneAddr(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := db.Query("SELECT idaddr, addr, lat, lng, postcode from addr  WHERE idaddr = ? ORDER BY `addr`", idaddr)
+	result, err := db.Query("SELECT idaddr, addr, lat, lng, postcode from addr  WHERE idaddr like ? LIMIT 1", idaddr)
 
 	if err != nil {
 		panic(err.Error())
@@ -107,6 +107,32 @@ func GetOneAddr(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(addr)
 }
 
+func GetListAddr(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
+
+	idaddr, err := strconv.Atoi(r.URL.Query().Get("idaddr"))
+
+	if err != nil || idaddr < 1 {
+		http.NotFound(w, r)
+		return
+	}
+
+	//'SELECT * FROM addr WHERE addr like "%' + query + '%" LIMIT 5'
+
+}
+
 func CreateAddr(w http.ResponseWriter, r *http.Request) {
 
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
@@ -116,6 +142,8 @@ func CreateAddr(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
+
+	//'INSERT INTO addr (addr, lat, lng, postcode) VALUES (?, ?, ?, ?)', [addr, lat, lng, postcode]
 
 	// stmt, err := db.Prepare("INSERT INTO addr(addr, lat, lng, postcode) VALUES(?, ?, ?, ?)")
 
@@ -154,6 +182,9 @@ func UpdateAddr(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
+
+	//'UPDATE addr SET addr="' + addr + '", postcode="' + postcode + '", lat="' + lat + '", lng="' + lng + '" WHERE idaddr="' + idaddr + '"'
+
 }
 
 func DeleteAddr(w http.ResponseWriter, r *http.Request) {
@@ -165,4 +196,7 @@ func DeleteAddr(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
+
+	//DELETE FROM addr WHERE idaddr = "' + idaddr + '"'
+
 }

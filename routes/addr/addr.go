@@ -4,9 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-
-	//"fmt"
-	//"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -175,7 +173,34 @@ func CreateAddr(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
-	//'INSERT INTO addr (addr, lat, lng, postcode) VALUES (?, ?, ?, ?)', [addr, lat, lng, postcode]
+	if r.Method != "POST" {
+		fmt.Println("Not Post")
+		return
+	}
+
+	addr := r.FormValue("addr")
+	lat := r.FormValue("lat")
+	lng := r.FormValue("lng")
+	postcode := r.FormValue("postcode")
+	//fmt.Println(addr)
+
+	if addr == "" {
+		fmt.Println("Feild is empty")
+
+	}
+
+	res, err := db.Exec("INSERT INTO addr (addr, lat, lng, postcode) VALUES (?, ?, ?, ?)", addr, lat, lng, postcode)
+	if err != nil {
+		panic(err)
+	}
+
+	lastId, err := res.LastInsertId()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("The last inserted row id: %d\n", lastId)
 
 	// stmt, err := db.Prepare("INSERT INTO addr(addr, lat, lng, postcode) VALUES(?, ?, ?, ?)")
 

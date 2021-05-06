@@ -3,6 +3,8 @@ package addr
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
+
 	//"fmt"
 	//"io/ioutil"
 	"net/http"
@@ -160,6 +162,11 @@ func GetListAddr(w http.ResponseWriter, r *http.Request) {
 
 func CreateAddr(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
 	if err != nil {
@@ -200,6 +207,11 @@ func CreateAddr(w http.ResponseWriter, r *http.Request) {
 
 func UpdateAddr(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "PUT")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
 	if err != nil {
@@ -214,6 +226,11 @@ func UpdateAddr(w http.ResponseWriter, r *http.Request) {
 
 func DeleteAddr(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
 	if err != nil {
@@ -222,6 +239,25 @@ func DeleteAddr(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
-	//DELETE FROM addr WHERE idaddr = "' + idaddr + '"'
+	idaddr, err := strconv.Atoi(r.URL.Query().Get("idaddr"))
+
+	if err != nil || idaddr < 1 {
+		http.NotFound(w, r)
+		return
+	}
+
+	stmt, err := db.Prepare("DELETE FROM addr WHERE idaddr = ?")
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	_, err = stmt.Exec(idaddr)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	fmt.Fprintf(w, "Addr with ID = %s was deleted", strconv.Itoa(idaddr))
 
 }

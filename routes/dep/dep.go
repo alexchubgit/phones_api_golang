@@ -4,12 +4,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-
-	//"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
-	//"github.com/gorilla/mux"
 )
 
 type Dep struct {
@@ -42,7 +40,7 @@ func GetDeps(w http.ResponseWriter, r *http.Request) {
 
 	var deps []Dep
 
-	result, err := db.Query("SELECT iddep, depart, sdep, email, abbr, idparent from depart ORDER BY `sdep`")
+	result, err := db.Query("SELECT iddep, depart, sdep, email, abbr, idparent from depart ORDER BY `iddep`")
 
 	if err != nil {
 		panic(err.Error())
@@ -88,10 +86,6 @@ func GetOneDep(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//params := mux.Vars(r)
-	//vals := r.URL.Query()
-	//fmt.Println(params)
-
 	result, err := db.Query("SELECT iddep, depart, sdep, email, abbr, idparent FROM depart WHERE iddep = ?", iddep)
 
 	if err != nil {
@@ -113,6 +107,9 @@ func GetOneDep(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(dep)
+
+	//'SELECT depart.*, addr.*, parent.sdep AS parent, parent.iddep AS idparent, COUNT(idperson) AS count FROM depart LEFT JOIN addr USING(idaddr) LEFT JOIN persons USING(iddep) LEFT JOIN depart AS parent ON depart.idparent=parent.iddep WHERE depart.iddep like ' + iddep + ' LIMIT 1'
+
 }
 
 func GetListDep(w http.ResponseWriter, r *http.Request) {
@@ -129,6 +126,34 @@ func GetListDep(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
+
+	query := r.URL.Query().Get("query")
+
+	var deps []Dep
+
+	result, err := db.Query("SELECT iddep, depart, sdep, email, abbr, idparent, idaddr from depart WHERE sdep like concat('%', ?, '%') LIMIT 5", query)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer result.Close()
+
+	for result.Next() {
+
+		var dep Dep
+
+		err := result.Scan(&dep.IDDEP, &dep.Depart, &dep.Sdep, &dep.Email, &dep.Abbr, &dep.Idparent, &dep.Idaddr)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		deps = append(deps, dep)
+	}
+
+	json.NewEncoder(w).Encode(deps)
+
 }
 
 func CreateDep(w http.ResponseWriter, r *http.Request) {
@@ -145,6 +170,35 @@ func CreateDep(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
+
+	if r.Method != "POST" {
+		fmt.Println("Not Post")
+		return
+	}
+
+	depart := r.FormValue("depart")
+	sdep := r.FormValue("sdep")
+	email := r.FormValue("email")
+	abbr := r.FormValue("abbr")
+	idaddr := r.FormValue("idaddr")
+	idparent := r.FormValue("idparent")
+
+	if depart == "" {
+		fmt.Println("Feild is empty")
+	}
+
+	res, err := db.Exec("INSERT INTO depart (depart , sdep, email, abbr, idaddr, idparent) VALUES (?, ?, ?, ?, ?, ?)", depart, sdep, email, abbr, idaddr, idparent)
+	if err != nil {
+		panic(err)
+	}
+
+	lastId, err := res.LastInsertId()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("The last inserted row id: %d\n", lastId)
 }
 
 func UpdateDep(w http.ResponseWriter, r *http.Request) {
@@ -161,6 +215,32 @@ func UpdateDep(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
+
+	if r.Method != "PUT" {
+		fmt.Println("Not PUT")
+		return
+	}
+
+	iddep := r.FormValue("iddep")
+	depart := r.FormValue("depart")
+	sdep := r.FormValue("sdep")
+	email := r.FormValue("email")
+	abbr := r.FormValue("abbr")
+	idaddr := r.FormValue("idaddr")
+	idparent := r.FormValue("idparent")
+
+	if depart == "" {
+		fmt.Println("Feild is empty")
+	}
+
+	_, err := db.Exec("UPDATE depart SET depart = ?, sdep = ?, email = ?, abbr = ?, idaddr = ?, idparent = ? WHERE iddep = ?", depart, sdep, email, abbr, idaddr, idparent, iddep)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	fmt.Fprintf(w, "Dep with ID = %s was updated", iddep)
+
 }
 
 func DeleteDep(w http.ResponseWriter, r *http.Request) {
@@ -199,9 +279,3 @@ func DeleteDep(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintf(w, "Dep with ID = %s was deleted", strconv.Itoa(iddep))
 }
-
-//"SELECT * FROM depart ORDER BY `sdep`"
-//'SELECT depart.*, addr.*, parent.sdep AS parent, parent.iddep AS idparent, COUNT(idperson) AS count FROM depart LEFT JOIN addr USING(idaddr) LEFT JOIN persons USING(iddep) LEFT JOIN depart AS parent ON depart.idparent=parent.iddep WHERE depart.iddep like ' + iddep + ' LIMIT 1'
-//'SELECT * FROM depart WHERE sdep like "%' + query + '%" LIMIT 5'
-//'INSERT INTO depart (depart , sdep, email, idaddr, idparent) VALUES (?, ?, ?, ?, ?)', [dep, sdep, email, idaddr, idparent]
-//'UPDATE depart SET depart="' + dep + '", sdep="' + sdep + '", email="' + email + '", idaddr="' + idaddr + '", idparent="' + idparent + '" WHERE iddep="' + iddep + '"'

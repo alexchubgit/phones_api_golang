@@ -58,8 +58,6 @@ func main() {
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/login", auth.Login).Methods("POST")
-
 	router.HandleFunc("/addr", addr.GetAddr).Methods("GET")
 	router.HandleFunc("/one_addr", addr.GetOneAddr).Methods("GET")
 	router.HandleFunc("/list_addr", addr.GetListAddr).Methods("GET")
@@ -75,6 +73,7 @@ func main() {
 
 	router.HandleFunc("/deps", dep.GetDeps).Methods("GET")
 	router.HandleFunc("/one_dep", dep.GetOneDep).Methods("GET")
+	router.HandleFunc("/list_dep", dep.GetListDep).Methods("GET")
 	router.HandleFunc("/add_dep", dep.CreateDep).Methods("POST")
 	router.HandleFunc("/upd_dep", dep.UpdateDep).Methods("PUT")
 	router.HandleFunc("/del_dep", dep.DeleteDep).Methods("DELETE")
@@ -90,9 +89,10 @@ func main() {
 	router.HandleFunc("/one_rank", ranks.GetOneRank).Methods("GET")
 
 	router.HandleFunc("/tokens", tokens.GetTokens).Methods("GET")
-
 	router.HandleFunc("/certs", certs.GetCert).Methods("GET")
 	router.HandleFunc("/docs", docs.GetDocs).Methods("GET")
+
+	router.HandleFunc("/login", auth.Login).Methods("POST")
 
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
 
@@ -200,3 +200,7 @@ func main() {
 
 //fmt.Println(idpos)
 //fmt.Println(pos)
+
+//params := mux.Vars(r)
+//vals := r.URL.Query()
+//fmt.Println(params)

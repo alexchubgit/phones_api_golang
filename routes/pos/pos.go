@@ -8,8 +8,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-
-	_ "github.com/go-sql-driver/mysql"
 )
 
 type Pos struct {
@@ -208,9 +206,6 @@ func UpdatePos(w http.ResponseWriter, r *http.Request) {
 	pos := r.FormValue("pos")
 	idpos := r.FormValue("idpos")
 
-	fmt.Println(idpos)
-	fmt.Println(pos)
-
 	_, err := db.Exec("UPDATE pos SET pos = ? WHERE idpos = ?", pos, idpos)
 
 	if err != nil {
@@ -219,67 +214,3 @@ func UpdatePos(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintf(w, "Pos with ID = %s was updated", idpos)
 }
-
-//fmt.Println(idpos)
-//idpos := r.URL.Query().Get("idpos")
-// params := mux.Vars(r)
-// fmt.Println(params)
-//result, err := db.Query("SELECT idpos, pos FROM pos WHERE idpos = ?", params["idpos"])
-
-//x-www-form-urlencoded
-
-// r.ParseForm()
-
-// fmt.Printf("%+v\n", r.Form)
-
-// for key, value := range r.Form {
-// 	fmt.Printf("%s = %s\n", key, value)
-// }
-
-// params := r.PostFormValue("pos")
-// fmt.Println(params)
-
-//получение параметра form-data
-
-// body, err := ioutil.ReadAll(r.Body)
-
-// if err != nil {
-// 	panic(err.Error())
-// }
-
-// keyVal := make(map[string]string)
-// json.Unmarshal(body, &keyVal)
-// pos := keyVal["pos"]
-// fmt.Println(pos)
-
-// fmt.Printf("%s\n", string(body))
-
-// if r.Method != "POST" {
-// 	http.Error(w, http.StatusText(405), 405)
-// 	return
-// }
-
-// pos := r.FormValue("pos")
-
-// fmt.Println(pos)
-
-// if pos == "" {
-// 	http.Error(w, http.StatusText(400), 400)
-// 	return
-// }
-
-// result, err := db.Exec("INSERT INTO pos VALUES($1)", pos)
-// if err != nil {
-// 	http.Error(w, http.StatusText(500), 500)
-// 	return
-// }
-
-// rowsAffected, err := result.RowsAffected()
-// if err != nil {
-// 	http.Error(w, http.StatusText(500), 500)
-// 	return
-// }
-
-// fmt.Fprintf(w, "Book %s created successfully (%d row affected)\n", pos, rowsAffected)
-
-//w.Header().Set("Context-Type", "application/x-www-form-urlencoded")

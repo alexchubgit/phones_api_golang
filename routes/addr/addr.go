@@ -101,7 +101,6 @@ func GetOneAddr(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err.Error())
 		}
-
 	}
 
 	json.NewEncoder(w).Encode(addr)
@@ -123,13 +122,6 @@ func GetListAddr(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	query := r.URL.Query().Get("query")
-
-	// query, err := strconv.Atoi(r.URL.Query().Get("query"))
-
-	// if err != nil {
-	// 	http.NotFound(w, r)
-	// 	return
-	// }
 
 	var addrs []Addr
 
@@ -155,7 +147,6 @@ func GetListAddr(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(addrs)
-
 }
 
 func CreateAddr(w http.ResponseWriter, r *http.Request) {
@@ -182,7 +173,6 @@ func CreateAddr(w http.ResponseWriter, r *http.Request) {
 	lat := r.FormValue("lat")
 	lng := r.FormValue("lng")
 	postcode := r.FormValue("postcode")
-	//fmt.Println(addr)
 
 	if addr == "" {
 		fmt.Println("Feild is empty")
@@ -201,33 +191,6 @@ func CreateAddr(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Printf("The last inserted row id: %d\n", lastId)
-
-	// stmt, err := db.Prepare("INSERT INTO addr(addr, lat, lng, postcode) VALUES(?, ?, ?, ?)")
-
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
-
-	// body, err := ioutil.ReadAll(r.Body)
-
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
-
-	// keyVal := make(map[string]string)
-
-	// json.Unmarshal(body, &keyVal)
-
-	// addr := keyVal["addr"]
-
-	// _, err = stmt.Exec(addr)
-
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
-
-	// fmt.Fprintf(w, "New address was created")
-
 }
 
 func UpdateAddr(w http.ResponseWriter, r *http.Request) {
@@ -245,7 +208,29 @@ func UpdateAddr(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
-	//'UPDATE addr SET addr="' + addr + '", postcode="' + postcode + '", lat="' + lat + '", lng="' + lng + '" WHERE idaddr="' + idaddr + '"'
+	if r.Method != "PUT" {
+		fmt.Println("Not PUT")
+		return
+	}
+
+	idaddr := r.FormValue("idaddr")
+	addr := r.FormValue("addr")
+	lat := r.FormValue("lat")
+	lng := r.FormValue("lng")
+	postcode := r.FormValue("postcode")
+
+	if addr == "" {
+		fmt.Println("Feild is empty")
+
+	}
+
+	_, err := db.Exec("UPDATE addr SET addr = ?, postcode = ?, lat = ?, lng = ? WHERE idaddr = ?", addr, postcode, lat, lng, idaddr)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	fmt.Fprintf(w, "Addr with ID = %s was updated", idaddr)
 
 }
 

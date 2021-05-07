@@ -3,6 +3,8 @@ package dep
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
+
 	//"fmt"
 	"net/http"
 	"os"
@@ -113,7 +115,28 @@ func GetOneDep(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(dep)
 }
 
+func GetListDep(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
+}
+
 func CreateDep(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
@@ -126,6 +149,11 @@ func CreateDep(w http.ResponseWriter, r *http.Request) {
 
 func UpdateDep(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "PUT")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
 	if err != nil {
@@ -137,6 +165,11 @@ func UpdateDep(w http.ResponseWriter, r *http.Request) {
 
 func DeleteDep(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
 	if err != nil {
@@ -144,6 +177,27 @@ func DeleteDep(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
+
+	iddep, err := strconv.Atoi(r.URL.Query().Get("iddep"))
+
+	if err != nil || iddep < 1 {
+		http.NotFound(w, r)
+		return
+	}
+
+	stmt, err := db.Prepare("DELETE FROM depart WHERE iddep = ?")
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	_, err = stmt.Exec(iddep)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	fmt.Fprintf(w, "Dep with ID = %s was deleted", strconv.Itoa(iddep))
 }
 
 //"SELECT * FROM depart ORDER BY `sdep`"
@@ -151,4 +205,3 @@ func DeleteDep(w http.ResponseWriter, r *http.Request) {
 //'SELECT * FROM depart WHERE sdep like "%' + query + '%" LIMIT 5'
 //'INSERT INTO depart (depart , sdep, email, idaddr, idparent) VALUES (?, ?, ?, ?, ?)', [dep, sdep, email, idaddr, idparent]
 //'UPDATE depart SET depart="' + dep + '", sdep="' + sdep + '", email="' + email + '", idaddr="' + idaddr + '", idparent="' + idparent + '" WHERE iddep="' + iddep + '"'
-//'DELETE FROM depart WHERE iddep = "' + iddep + '"'

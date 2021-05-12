@@ -72,6 +72,15 @@ func CreateToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
+
+	// const myobj =
+	// {
+	//     "number": req.body.number,
+	//     "owner": req.body.owner,
+	//     "status": req.body.status,
+	//     "comment": req.body.comment
+	// };
+
 }
 
 func UpdateToken(w http.ResponseWriter, r *http.Request) {
@@ -88,6 +97,17 @@ func UpdateToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
+
+	// const idtoken = req.body._id;
+
+	// const myobj =
+	// {
+	//     "number": req.body.number,
+	//     "owner": req.body.owner,
+	//     "status": req.body.status,
+	//     "comment": req.body.comment
+	// };
+
 }
 
 func DeleteToken(w http.ResponseWriter, r *http.Request) {
@@ -104,4 +124,5 @@ func DeleteToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
+
 }

@@ -38,7 +38,7 @@ func GetAddr(w http.ResponseWriter, r *http.Request) {
 
 	var addrs []Addr
 
-	result, err := db.Query("SELECT idaddr, addr, lat, lng, postcode from addr ORDER BY `addr`")
+	result, err := db.Query("SELECT idaddr, addr, lat, lng, postcode FROM addr ORDER BY `addr`")
 
 	if err != nil {
 		panic(err.Error())
@@ -84,7 +84,7 @@ func GetOneAddr(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := db.Query("SELECT idaddr, addr, lat, lng, postcode from addr  WHERE idaddr like ? LIMIT 1", idaddr)
+	result, err := db.Query("SELECT idaddr, addr, lat, lng, postcode FROM addr WHERE idaddr like ? LIMIT 1", idaddr)
 
 	if err != nil {
 		panic(err.Error())
@@ -125,7 +125,7 @@ func GetListAddr(w http.ResponseWriter, r *http.Request) {
 
 	var addrs []Addr
 
-	result, err := db.Query("SELECT idaddr, addr, lat, lng, postcode from addr WHERE addr like concat('%', ?, '%') LIMIT 5", query)
+	result, err := db.Query("SELECT idaddr, addr, lat, lng, postcode FROM addr WHERE addr like concat('%', ?, '%') LIMIT 5", query)
 
 	if err != nil {
 		panic(err.Error())

@@ -35,7 +35,7 @@ func GetPoses(w http.ResponseWriter, r *http.Request) {
 
 	var poses []Pos
 
-	result, err := db.Query("SELECT idpos, pos from pos")
+	result, err := db.Query("SELECT idpos, pos FROM pos ORDER BY `pos`")
 
 	if err != nil {
 		panic(err.Error())
@@ -81,7 +81,7 @@ func GetOnePos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := db.Query("SELECT idpos, pos FROM pos WHERE idpos = ?", idpos)
+	result, err := db.Query("SELECT idpos, pos FROM pos WHERE idpos LIKE ? LIMIT 1", idpos)
 
 	if err != nil {
 		panic(err.Error())
@@ -103,11 +103,11 @@ func GetOnePos(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(pos)
 }
 
-func DeletePos(w http.ResponseWriter, r *http.Request) {
+func GetListPos(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "DELETE")
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
@@ -118,26 +118,32 @@ func DeletePos(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
-	idpos, err := strconv.Atoi(r.URL.Query().Get("idpos"))
+	query := r.URL.Query().Get("query")
 
-	if err != nil || idpos < 1 {
-		http.NotFound(w, r)
-		return
-	}
+	var poses []Pos
 
-	stmt, err := db.Prepare("DELETE FROM pos WHERE idpos = ?")
+	result, err := db.Query("SELECT idpos, pos FROM pos WHERE pos LIKE concat('%', ?, '%') LIMIT 5", query)
 
 	if err != nil {
 		panic(err.Error())
 	}
 
-	_, err = stmt.Exec(idpos)
+	defer result.Close()
 
-	if err != nil {
-		panic(err.Error())
+	for result.Next() {
+
+		var pos Pos
+
+		err := result.Scan(&pos.IDPOS, &pos.Pos)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		poses = append(poses, pos)
+
 	}
-
-	fmt.Fprintf(w, "Pos with ID = %s was deleted", strconv.Itoa(idpos))
+	json.NewEncoder(w).Encode(poses)
 }
 
 func CreatePos(w http.ResponseWriter, r *http.Request) {
@@ -213,4 +219,41 @@ func UpdatePos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, "Pos with ID = %s was updated", idpos)
+}
+
+func DeletePos(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
+
+	idpos, err := strconv.Atoi(r.URL.Query().Get("idpos"))
+
+	if err != nil || idpos < 1 {
+		http.NotFound(w, r)
+		return
+	}
+
+	stmt, err := db.Prepare("DELETE FROM pos WHERE idpos = ?")
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	_, err = stmt.Exec(idpos)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	fmt.Fprintf(w, "Pos with ID = %s was deleted", strconv.Itoa(idpos))
 }

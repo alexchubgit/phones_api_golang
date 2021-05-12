@@ -67,9 +67,17 @@ func main() {
 
 	router.HandleFunc("/pos", pos.GetPoses).Methods("GET")
 	router.HandleFunc("/one_pos", pos.GetOnePos).Methods("GET")
+	router.HandleFunc("/list_pos", pos.GetListPos).Methods("GET")
 	router.HandleFunc("/add_pos", pos.CreatePos).Methods("POST")
 	router.HandleFunc("/upd_pos", pos.UpdatePos).Methods("PUT")
 	router.HandleFunc("/del_pos", pos.DeletePos).Methods("DELETE")
+
+	router.HandleFunc("/ranks", ranks.GetRanks).Methods("GET")
+	router.HandleFunc("/one_rank", ranks.GetOneRank).Methods("GET")
+	router.HandleFunc("/list_rank", ranks.GetListRank).Methods("GET")
+	router.HandleFunc("/add_rank", ranks.CreateRank).Methods("POST")
+	router.HandleFunc("/upd_rank", ranks.UpdateRank).Methods("PUT")
+	router.HandleFunc("/del_rank", ranks.DeleteRank).Methods("DELETE")
 
 	router.HandleFunc("/deps", dep.GetDeps).Methods("GET")
 	router.HandleFunc("/one_dep", dep.GetOneDep).Methods("GET")
@@ -84,9 +92,6 @@ func main() {
 
 	router.HandleFunc("/places", places.GetPlaces).Methods("GET")
 	router.HandleFunc("/one_place", places.GetOnePlace).Methods("GET")
-
-	router.HandleFunc("/ranks", ranks.GetRanks).Methods("GET")
-	router.HandleFunc("/one_rank", ranks.GetOneRank).Methods("GET")
 
 	router.HandleFunc("/tokens", tokens.GetTokens).Methods("GET")
 	router.HandleFunc("/certs", certs.GetCert).Methods("GET")

@@ -154,3 +154,69 @@ func DeletePlace(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 }
+
+// const getPlace = (idaddr) => {
+//     return new Promise((resolve, reject) => {
+//         pool.query('SELECT * FROM places LEFT JOIN persons USING(idperson) WHERE idaddr = ' + idaddr + ' ORDER BY place;', (err, results) => {
+//             if (err) {
+//                 return reject(err);
+//             }
+//             return resolve(results);
+//         });
+//     });
+// }
+
+// const getOnePlace = (idplace) => {
+//     return new Promise((resolve, reject) => {
+//         pool.query('SELECT * FROM places LEFT JOIN persons USING(idperson) LEFT JOIN addr USING(idaddr) WHERE idplace like ' + idplace + ' LIMIT 1', (err, results) => {
+//             if (err) {
+//                 return reject(err);
+//             }
+//             return resolve(results);
+//         });
+//     });
+// }
+
+// const addPlace = (place, work, internal, ipphone, arm, idaddr, idperson) => {
+//     return new Promise((resolve, reject) => {
+//         pool.query('INSERT INTO places (place, work, internal, ipphone, arm, idaddr, idperson) VALUES (?, ?, ?, ?, ?, ?, ?)', [place, work, internal, ipphone, arm, idaddr, idperson], (err, results) => {
+//             if (err) {
+//                 return reject(err);
+//             }
+//             return resolve(results);
+//         });
+//     });
+// }
+
+// const updPlace = (place, work, internal, ipphone, arm, idaddr, idperson, idplace) => {
+//     return new Promise((resolve, reject) => {
+//         pool.query('UPDATE places SET place="' + place + '", work="' + work + '", internal="' + internal + '", ipphone="' + ipphone + '", arm="' + arm + '", idaddr="' + idaddr + '", idperson="' + idperson + '" WHERE idplace="' + idplace + '"', (err, results) => {
+//             if (err) {
+//                 return reject(err);
+//             }
+//             return resolve(results);
+//         });
+//     });
+// }
+
+// const delPlace = (idplace) => {
+//     return new Promise((resolve, reject) => {
+//         pool.query('DELETE FROM places WHERE idplace = "' + idplace + '"', (err, results) => {
+//             if (err) {
+//                 return reject(err);
+//             }
+//             return resolve(results);
+//         });
+//     });
+// }
+
+// const delPersonFromPlace = (idplace) => {
+//     return new Promise((resolve, reject) => {
+//         pool.query('UPDATE places SET idperson="0" WHERE idplace="' + idplace + '"', (err, results) => {
+//             if (err) {
+//                 return reject(err);
+//             }
+//             return resolve(results);
+//         });
+//     });
+// }

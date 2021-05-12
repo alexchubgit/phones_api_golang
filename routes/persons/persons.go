@@ -237,3 +237,157 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 //'UPDATE persons SET name="' + name + '", date="' + date + '", cellular="' + cellular + '", business="' + business + '", iddep="' + iddep + '", idpos="' + idpos + '", idrank="' + idrank + '" WHERE idperson="' + idperson + '"'
 //'DELETE FROM persons WHERE idperson = "' + idperson + '"'
 //'UPDATE persons SET iddep="0", idpos="0", idrole="0" WHERE idperson="' + idperson + '"'
+
+// const getAllPersons = (iddep) => {
+//     return new Promise((resolve, reject) => {
+//         pool.query("SELECT *, IF(file IS NULL or file = '', 'photo.png', file) as file, date_format(date,'%Y-%m-%d') AS date FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN places USING(idperson) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE iddep like " + iddep + " ORDER BY name", (err, results) => {
+//             if (err) {
+//                 return reject(err);
+//             }
+//             return resolve(results);
+//         });
+//     });
+// };
+
+// const getDismissed = () => {
+//     return new Promise((resolve, reject) => {
+//         pool.query("SELECT *, IF(file IS NULL or file = '', 'photo.png', file) as file, date_format(date,'%Y-%m-%d') AS date FROM persons LEFT JOIN ranks USING(idrank) WHERE iddep = '0' ORDER BY name", (err, results) => {
+//             if (err) {
+//                 return reject(err);
+//             }
+//             return resolve(results);
+//         });
+//     });
+// };
+
+// const getOnePerson = (idperson) => {
+//     return new Promise((resolve, reject) => {
+//         pool.query("SELECT *, IF(file IS NULL or file = '', 'photo.png', file) as file, date_format(date,'%Y-%m-%d') AS date FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN places USING(idperson) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE idperson like " + idperson + " LIMIT 1", (err, results) => {
+//             if (err) {
+//                 return reject(err);
+//             }
+//             return resolve(results);
+//         });
+//     });
+// }
+
+// const getListPersons = (query) => {
+//     return new Promise((resolve, reject) => {
+//         pool.query('SELECT * FROM persons LEFT JOIN depart USING(iddep) WHERE name like "%' + query + '%" LIMIT 5', (err, results) => {
+//             if (err) {
+//                 return reject(err);
+//             }
+//             return resolve(results);
+//         });
+//     });
+// }
+
+// const getDatesWeek = () => {
+//     return new Promise((resolve, reject) => {
+//         pool.query("SELECT *, IF(file IS NULL OR file = '', 'photo.png', file) as file, date_format(date,'%Y-%m-%d') AS date from persons LEFT JOIN depart USING(iddep) LEFT JOIN places USING(idperson) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE date_format(now()+interval 7 day,'%m-%d')>date_format(date,'%m-%d') AND date_format(now(),'%m-%d')<date_format(date,'%m-%d') AND iddep != 0 ORDER BY `name`", (err, results) => {
+//             if (err) {
+//                 return reject(err);
+//             }
+//             return resolve(results);
+//         });
+//     });
+// }
+
+// const getDatesToday = (day) => {
+//     return new Promise((resolve, reject) => {
+//         pool.query("SELECT *, IF(file IS NULL OR file = '', 'photo.png', file) as file, date_format(date,'%Y-%m-%d') AS date FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE DATE_FORMAT(date, '%m-%d') like '" + day + "' ORDER BY `name`", (err, results) => {
+//             if (err) {
+//                 return reject(err);
+//             }
+//             return resolve(results);
+//         });
+//     });
+// }
+
+// const seachPersonByPhone = (query) => {
+//     return new Promise((resolve, reject) => {
+//         pool.query('SELECT *, date_format(date,"%Y-%m-%d") AS date FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN places USING(idperson) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE persons.cellular like "%' + query + '%" OR persons.business like "%' + query + '%" OR places.work like "%' + query + '%" AND iddep != 0 ORDER BY persons.idperson LIMIT 10', (err, results) => {
+//             if (err) {
+//                 return reject(err);
+//             }
+//             return resolve(results);
+//         });
+//     });
+// }
+
+// const seachPersonByName = (query) => {
+//     return new Promise((resolve, reject) => {
+//         pool.query('SELECT *, date_format(date,"%Y-%m-%d") AS date FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN places USING(idperson) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE persons.name like "%' + query + '%" AND iddep != 0 ORDER BY persons.idperson LIMIT 10', (err, results) => {
+//             if (err) {
+//                 return reject(err);
+//             }
+//             return resolve(results);
+//         });
+//     });
+// }
+
+// const addPersonWithoutFile = (name, date, cellular, business, iddep, idpos, idrank) => {
+//     return new Promise((resolve, reject) => {
+//         pool.query('INSERT INTO persons (name, date, cellular, business, iddep, idpos, idrank, file) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [name, date, cellular, business, iddep, idpos, idrank, newname], (err, results) => {
+//             if (err) {
+//                 return reject(err);
+//             }
+//             return resolve(results);
+//         });
+//     });
+// }
+
+// const addPerson = (name, date, cellular, business, iddep, idpos, idrank, file) => {
+//     return new Promise((resolve, reject) => {
+//         pool.query('INSERT INTO persons (name, date, cellular, business, iddep, idpos, idrank, file) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [name, date, cellular, business, iddep, idpos, idrank, file], (err, results) => {
+//             if (err) {
+//                 return reject(err);
+//             }
+//             return resolve(results);
+//         });
+//     });
+// }
+
+// const updPersonWithoutFile = (name, date, cellular, business, iddep, idpos, idrank) => {
+//     return new Promise((resolve, reject) => {
+//         pool.query('UPDATE persons SET name="' + name + '", date="' + date + '", cellular="' + cellular + '", business="' + business + '", iddep="' + iddep + '", idpos="' + idpos + '", idrank="' + idrank + '" WHERE idperson="' + idperson + '"', (err, results) => {
+//             if (err) {
+//                 return reject(err);
+//             }
+//             return resolve(results);
+//         });
+//     });
+// }
+
+// const updPerson = (name, date, cellular, business, iddep, idpos, idrank, file) => {
+//     return new Promise((resolve, reject) => {
+//         pool.query('UPDATE persons SET name="' + name + '", date="' + date + '", cellular="' + cellular + '", business="' + business + '", iddep="' + iddep + '", idpos="' + idpos + '", idrank="' + idrank + '" WHERE idperson="' + idperson + '"', (err, results) => {
+//             if (err) {
+//                 return reject(err);
+//             }
+//             return resolve(results);
+//         });
+//     });
+// }
+
+// const delPerson = (idperson) => {
+//     return new Promise((resolve, reject) => {
+//         pool.query('DELETE FROM persons WHERE idperson = "' + idperson + '"', (err, results) => {
+//             if (err) {
+//                 return reject(err);
+//             }
+//             return resolve(results);
+//         });
+//     });
+// }
+
+// const dismissPerson = (idperson) => {
+//     return new Promise((resolve, reject) => {
+//         pool.query('UPDATE persons SET iddep="0", idpos="0", idrole="0" WHERE idperson="' + idperson + '"', (err, results) => {
+//             if (err) {
+//                 return reject(err);
+//             }
+//             return resolve(results);
+//         });
+//     });
+// }

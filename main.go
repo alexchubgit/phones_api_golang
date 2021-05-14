@@ -21,6 +21,7 @@ import (
 	"alexchubgit/api/routes/tokens"
 
 	"alexchubgit/api/routes/auth"
+	"alexchubgit/api/routes/middleware"
 )
 
 var (
@@ -61,9 +62,9 @@ func main() {
 	router.HandleFunc("/addr", addr.GetAddr).Methods("GET")
 	router.HandleFunc("/one_addr", addr.GetOneAddr).Methods("GET")
 	router.HandleFunc("/list_addr", addr.GetListAddr).Methods("GET")
-	router.HandleFunc("/add_addr", addr.CreateAddr).Methods("POST")
-	router.HandleFunc("/upd_addr", addr.UpdateAddr).Methods("PUT")
-	router.HandleFunc("/del_addr", addr.DeleteAddr).Methods("DELETE")
+	router.HandleFunc("/add_addr", middleware.CheckSecurity("Password", addr.CreateAddr)).Methods("POST")
+	router.HandleFunc("/upd_addr", middleware.CheckSecurity("Password", addr.UpdateAddr)).Methods("PUT")
+	router.HandleFunc("/del_addr", middleware.CheckSecurity("Password", addr.DeleteAddr)).Methods("DELETE")
 
 	router.HandleFunc("/pos", pos.GetPoses).Methods("GET")
 	router.HandleFunc("/one_pos", pos.GetOnePos).Methods("GET")
@@ -86,12 +87,16 @@ func main() {
 	router.HandleFunc("/upd_dep", dep.UpdateDep).Methods("PUT")
 	router.HandleFunc("/del_dep", dep.DeleteDep).Methods("DELETE")
 
+	router.HandleFunc("/places", places.GetPlaces).Methods("GET")
+	router.HandleFunc("/one_place", places.GetOnePlace).Methods("GET")
+	router.HandleFunc("/add_place", places.CreatePlace).Methods("POST")
+	router.HandleFunc("/upd_place", places.UpdatePlace).Methods("PUT")
+	router.HandleFunc("/del_person_place", places.DeletePersonFromPlace).Methods("PUT")
+	router.HandleFunc("/del_place", places.DeletePlace).Methods("DELETE")
+
 	router.HandleFunc("/persons", persons.GetPersons).Methods("GET")
 	router.HandleFunc("/one_person", persons.GetOnePerson).Methods("GET")
 	router.HandleFunc("/add_person", persons.CreatePerson).Methods("POST")
-
-	router.HandleFunc("/places", places.GetPlaces).Methods("GET")
-	router.HandleFunc("/one_place", places.GetOnePlace).Methods("GET")
 
 	router.HandleFunc("/tokens", tokens.GetTokens).Methods("GET")
 	router.HandleFunc("/certs", certs.GetCert).Methods("GET")
@@ -106,106 +111,18 @@ func main() {
 
 }
 
-// query, err := strconv.Atoi(r.URL.Query().Get("query"))
+//"gopkg.in/guregu/null.v4/zero"
+//Name     zero.String `json:"name"`
+//Name     NullString  `json:"name"`
 
-// if err != nil {
-// 	http.NotFound(w, r)
-// 	return
+// type NullString struct {
+// 	sql.NullString
 // }
 
-// stmt, err := db.Prepare("INSERT INTO addr(addr, lat, lng, postcode) VALUES(?, ?, ?, ?)")
-
-// if err != nil {
-// 	panic(err.Error())
+// MarshalJSON for NullString
+// func (ns *NullString) MarshalJSON() ([]byte, error) {
+// 	if !ns.Valid {
+// 		return []byte("null"), nil
+// 	}
+// 	return json.Marshal(ns.String)
 // }
-
-// body, err := ioutil.ReadAll(r.Body)
-
-// if err != nil {
-// 	panic(err.Error())
-// }
-
-// keyVal := make(map[string]string)
-
-// json.Unmarshal(body, &keyVal)
-
-// addr := keyVal["addr"]
-
-// _, err = stmt.Exec(addr)
-
-// if err != nil {
-// 	panic(err.Error())
-// }
-
-// fmt.Fprintf(w, "New address was created")
-
-//fmt.Println(idpos)
-//idpos := r.URL.Query().Get("idpos")
-// params := mux.Vars(r)
-// fmt.Println(params)
-//result, err := db.Query("SELECT idpos, pos FROM pos WHERE idpos = ?", params["idpos"])
-
-//x-www-form-urlencoded
-
-// r.ParseForm()
-
-// fmt.Printf("%+v\n", r.Form)
-
-// for key, value := range r.Form {
-// 	fmt.Printf("%s = %s\n", key, value)
-// }
-
-// params := r.PostFormValue("pos")
-// fmt.Println(params)
-
-//получение параметра form-data
-
-// body, err := ioutil.ReadAll(r.Body)
-
-// if err != nil {
-// 	panic(err.Error())
-// }
-
-// keyVal := make(map[string]string)
-// json.Unmarshal(body, &keyVal)
-// pos := keyVal["pos"]
-// fmt.Println(pos)
-
-// fmt.Printf("%s\n", string(body))
-
-// if r.Method != "POST" {
-// 	http.Error(w, http.StatusText(405), 405)
-// 	return
-// }
-
-// pos := r.FormValue("pos")
-
-// fmt.Println(pos)
-
-// if pos == "" {
-// 	http.Error(w, http.StatusText(400), 400)
-// 	return
-// }
-
-// result, err := db.Exec("INSERT INTO pos VALUES($1)", pos)
-// if err != nil {
-// 	http.Error(w, http.StatusText(500), 500)
-// 	return
-// }
-
-// rowsAffected, err := result.RowsAffected()
-// if err != nil {
-// 	http.Error(w, http.StatusText(500), 500)
-// 	return
-// }
-
-// fmt.Fprintf(w, "Book %s created successfully (%d row affected)\n", pos, rowsAffected)
-
-//w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
-
-//fmt.Println(idpos)
-//fmt.Println(pos)
-
-//params := mux.Vars(r)
-//vals := r.URL.Query()
-//fmt.Println(params)

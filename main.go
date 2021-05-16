@@ -96,13 +96,22 @@ func main() {
 
 	router.HandleFunc("/persons", persons.GetPersons).Methods("GET")
 	router.HandleFunc("/one_person", persons.GetOnePerson).Methods("GET")
+	router.HandleFunc("/list_persons", persons.GetListPersons).Methods("GET")
 	router.HandleFunc("/add_person", persons.CreatePerson).Methods("POST")
+	router.HandleFunc("/upd_person", persons.UpdatePerson).Methods("PUT")
+	router.HandleFunc("/del_person", persons.DeletePerson).Methods("DELETE")
+	router.HandleFunc("/dismissed", persons.GetDismissed).Methods("GET")
+	router.HandleFunc("/dates", persons.GetDatesWeek).Methods("GET")
+	router.HandleFunc("/dates_today", persons.GetDatesToday).Methods("GET")
+	router.HandleFunc("/search", persons.Search).Methods("GET")
+	router.HandleFunc("/dismiss", persons.Dismiss).Methods("PUT")
 
 	router.HandleFunc("/tokens", tokens.GetTokens).Methods("GET")
 	router.HandleFunc("/certs", certs.GetCert).Methods("GET")
 	router.HandleFunc("/docs", docs.GetDocs).Methods("GET")
 
 	router.HandleFunc("/login", auth.Login).Methods("POST")
+	router.HandleFunc("/getuser", auth.GetUser).Methods("GET")
 
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
 

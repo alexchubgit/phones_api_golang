@@ -11,13 +11,16 @@ import (
 )
 
 type Dep struct {
-	IDDEP    int    `json:"iddep"`
-	Depart   string `json:"depart"`
-	Sdep     string `json:"sdep"`
-	Email    string `json:"email"`
-	Abbr     string `json:"abbr"`
-	Idparent int    `json:"idparent"`
-	Idaddr   int    `json:"idaddr"`
+	IDDEP    int     `json:"iddep"`
+	Depart   string  `json:"depart"`
+	Sdep     string  `json:"sdep"`
+	Email    string  `json:"email"`
+	Abbr     string  `json:"abbr"`
+	Postcode *string `json:"postcode"`
+	Addr     *string `json:"addr"`
+	Idparent int     `json:"idparent"`
+	Idaddr   int     `json:"idaddr"`
+	Count    int     `json:"count"`
 }
 
 var db *sql.DB
@@ -40,7 +43,7 @@ func GetDeps(w http.ResponseWriter, r *http.Request) {
 
 	var deps []Dep
 
-	result, err := db.Query("SELECT iddep, depart, sdep, email, abbr, idparent from depart ORDER BY `iddep`")
+	result, err := db.Query("SELECT iddep, depart, sdep, email, abbr, idparent from depart ORDER BY `sdep`")
 
 	if err != nil {
 		panic(err.Error())
@@ -86,7 +89,7 @@ func GetOneDep(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := db.Query("SELECT iddep, depart, sdep, email, abbr, idparent FROM depart WHERE iddep = ?", iddep)
+	result, err := db.Query("SELECT iddep, depart, sdep, addr, email, abbr, idparent, idaddr, COUNT(idperson) AS count FROM depart LEFT JOIN addr USING(idaddr) LEFT JOIN persons USING(iddep) WHERE iddep = ?", iddep)
 
 	if err != nil {
 		panic(err.Error())
@@ -98,7 +101,7 @@ func GetOneDep(w http.ResponseWriter, r *http.Request) {
 
 	for result.Next() {
 
-		err := result.Scan(&dep.IDDEP, &dep.Depart, &dep.Sdep, &dep.Email, &dep.Abbr, &dep.Idparent)
+		err := result.Scan(&dep.IDDEP, &dep.Depart, &dep.Sdep, &dep.Addr, &dep.Email, &dep.Abbr, &dep.Idparent, &dep.Idaddr, &dep.Count)
 
 		if err != nil {
 			panic(err.Error())

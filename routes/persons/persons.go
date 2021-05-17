@@ -15,17 +15,26 @@ import (
 )
 
 type Person struct {
-	IDPERSON int    `json:"idperson"`
-	Name     string `json:"name"`
-	Date     string `json:"date"`
-	File     string `json:"file"`
-	Cellular string `json:"cellular"`
-	Business string `json:"business"`
-	Passwd   string `json:"passwd"`
-	Iddep    int    `json:"iddep"`
-	Idpos    int    `json:"idpos"`
-	Idrank   int    `json:"idrank"`
-	Idrole   int    `json:"idrole"`
+	IDPERSON int     `json:"idperson"`
+	Name     string  `json:"name"`
+	Date     string  `json:"date"`
+	File     string  `json:"file"`
+	Pos      *string `json:"pos"`
+	Rank     *string `json:"rank"`
+	Cellular string  `json:"cellular"`
+	Business string  `json:"business"`
+	Depart   *string `json:"depart"`
+	Sdep     *string `json:"sdep"`
+	Place    *string `json:"place"`
+	Work     *string `json:"work"`
+	Internal *string `json:"internal"`
+	Ipphone  *string `json:"ipphone"`
+	ARM      *string `json:"arm"`
+	Passwd   string  `json:"passwd"`
+	Iddep    int     `json:"iddep"`
+	Idpos    int     `json:"idpos"`
+	Idrank   int     `json:"idrank"`
+	Idrole   int     `json:"idrole"`
 }
 
 var db *sql.DB
@@ -33,19 +42,92 @@ var err error
 
 func GetDatesWeek(w http.ResponseWriter, r *http.Request) {
 
-	// const getDatesWeek = () => {
-	//     return new Promise((resolve, reject) => {
-	//         pool.query("SELECT *, IF(file IS NULL OR file = '', 'photo.png', file) as file, date_format(date,'%Y-%m-%d') AS date from persons LEFT JOIN depart USING(iddep) LEFT JOIN places USING(idperson) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE date_format(now()+interval 7 day,'%m-%d')>date_format(date,'%m-%d') AND date_format(now(),'%m-%d')<date_format(date,'%m-%d') AND iddep != 0 ORDER BY `name`", (err, results) => {
-	//             if (err) {
-	//                 return reject(err);
-	//             }
-	//             return resolve(results);
-	//         });
-	//     });
-	// }
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
+
+	var persons []Person
+
+	result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, pos, rank, iddep, idpos, idrank FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE date_format(now()+interval 7 day,'%m-%d')>date_format(date,'%m-%d') AND date_format(now(),'%m-%d')<date_format(date,'%m-%d') AND iddep != 0 ORDER BY `name`")
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer result.Close()
+
+	for result.Next() {
+
+		var person Person
+
+		err := result.Scan(&person.IDPERSON, &person.Name, &person.Date, &person.File, &person.Cellular, &person.Business, &person.Pos, &person.Rank, &person.Iddep, &person.Idpos, &person.Idrank)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		persons = append(persons, person)
+	}
+
+	json.NewEncoder(w).Encode(persons)
+
 }
 
 func GetDatesToday(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
+
+	day := "05-05"
+
+	// if err != nil || iddep < 1 {
+	// 	http.NotFound(w, r)
+	// 	return
+	// }
+
+	var persons []Person
+
+	result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, pos, rank, iddep, idpos, idrank FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE DATE_FORMAT(date, '%m-%d') like ? ORDER BY `name`", day)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer result.Close()
+
+	for result.Next() {
+
+		var person Person
+
+		err := result.Scan(&person.IDPERSON, &person.Name, &person.Date, &person.File, &person.Cellular, &person.Business, &person.Pos, &person.Rank, &person.Iddep, &person.Idpos, &person.Idrank)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		persons = append(persons, person)
+	}
+
+	json.NewEncoder(w).Encode(persons)
 
 	// const getDatesToday = (day) => {
 	//     return new Promise((resolve, reject) => {
@@ -124,7 +206,7 @@ func GetPersons(w http.ResponseWriter, r *http.Request) {
 
 	var persons []Person
 
-	result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, iddep, idpos, idrank, idrole FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN places USING(idperson) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE iddep like ? ORDER BY `name`", iddep)
+	result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, pos, rank, iddep, idpos, idrank FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE iddep like ? ORDER BY `name`", iddep)
 
 	if err != nil {
 		panic(err.Error())
@@ -136,7 +218,7 @@ func GetPersons(w http.ResponseWriter, r *http.Request) {
 
 		var person Person
 
-		err := result.Scan(&person.IDPERSON, &person.Name, &person.Date, &person.File, &person.Cellular, &person.Business, &person.Iddep, &person.Idpos, &person.Idrank, &person.Idrole)
+		err := result.Scan(&person.IDPERSON, &person.Name, &person.Date, &person.File, &person.Cellular, &person.Business, &person.Pos, &person.Rank, &person.Iddep, &person.Idpos, &person.Idrank)
 
 		if err != nil {
 			panic(err.Error())
@@ -171,7 +253,7 @@ func GetOnePerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, iddep, idpos, idrank, idrole FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN places USING(idperson) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE idperson = ? LIMIT 1", idperson)
+	result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, pos, rank, cellular, business, depart, place, work, internal, ipphone, arm, iddep, idpos, idrank FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN places USING(idperson) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE idperson = ? LIMIT 1", idperson)
 
 	if err != nil {
 		panic(err.Error())
@@ -183,7 +265,7 @@ func GetOnePerson(w http.ResponseWriter, r *http.Request) {
 
 	for result.Next() {
 
-		err := result.Scan(&person.IDPERSON, &person.Name, &person.Date, &person.File, &person.Cellular, &person.Business, &person.Iddep, &person.Idpos, &person.Idrank, &person.Idrole)
+		err := result.Scan(&person.IDPERSON, &person.Name, &person.Date, &person.File, &person.Pos, &person.Rank, &person.Cellular, &person.Business, &person.Depart, &person.Place, &person.Work, &person.Internal, &person.Ipphone, &person.ARM, &person.Iddep, &person.Idpos, &person.Idrank)
 
 		if err != nil {
 			panic(err.Error())
@@ -212,7 +294,7 @@ func GetListPersons(w http.ResponseWriter, r *http.Request) {
 
 	var persons []Person
 
-	result, err := db.Query("SELECT idperson, name, cellular, business, iddep, idpos, idrank, idrole, IF(file IS NULL or file = '', 'photo.png', file) as file, date_format(date,'%Y-%m-%d') AS date FROM persons LEFT JOIN depart USING(iddep) WHERE name LIKE concat('%', ?, '%') LIMIT 5", query)
+	result, err := db.Query("SELECT idperson, sdep FROM persons LEFT JOIN depart USING(iddep) WHERE name LIKE concat('%', ?, '%') LIMIT 5", query)
 
 	if err != nil {
 		panic(err.Error())
@@ -224,7 +306,7 @@ func GetListPersons(w http.ResponseWriter, r *http.Request) {
 
 		var person Person
 
-		err := result.Scan(&person.IDPERSON, &person.Name, &person.Cellular, &person.Business, &person.Iddep, &person.Idpos, &person.Idrank, &person.Idrole, &person.File, &person.Date)
+		err := result.Scan(&person.IDPERSON, &person.Sdep)
 
 		if err != nil {
 			panic(err.Error())

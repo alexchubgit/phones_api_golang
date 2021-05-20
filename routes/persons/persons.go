@@ -1,16 +1,15 @@
 package persons
 
 import (
-	//"crypto/md5"
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	//"html/template"
 	"io"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
-	//"time"
+	"time"
 	//"github.com/gorilla/mux"
 )
 
@@ -97,16 +96,14 @@ func GetDatesToday(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
-	day := "05-05"
-
-	// if err != nil || iddep < 1 {
-	// 	http.NotFound(w, r)
-	// 	return
-	// }
+	now := time.Now()
+	month := strconv.Itoa(int(now.Month()))
+	day := strconv.Itoa(now.Day())
+	date := month + "-" + day
 
 	var persons []Person
 
-	result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, pos, rank, iddep, idpos, idrank FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE DATE_FORMAT(date, '%m-%d') like ? ORDER BY `name`", day)
+	result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, pos, rank, iddep, idpos, idrank FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE DATE_FORMAT(date, '%m-%d') LIKE concat('%', ?) ORDER BY `name`", date)
 
 	if err != nil {
 		panic(err.Error())
@@ -129,19 +126,34 @@ func GetDatesToday(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(persons)
 
-	// const getDatesToday = (day) => {
-	//     return new Promise((resolve, reject) => {
-	//         pool.query("SELECT *, IF(file IS NULL OR file = '', 'photo.png', file) as file, date_format(date,'%Y-%m-%d') AS date FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE DATE_FORMAT(date, '%m-%d') like '" + day + "' ORDER BY `name`", (err, results) => {
-	//             if (err) {
-	//                 return reject(err);
-	//             }
-	//             return resolve(results);
-	//         });
-	//     });
-	// }
 }
 
 func Search(w http.ResponseWriter, r *http.Request) {
+
+	//re := regexp.MustCompile(`(?:^|[^0-9])(1[34578][0-9]{9})(?:$|[^0-9])`)
+
+	// matched, err := regexp.MatchString(`/^((\+7|7|8)+([0-9]){10})$/gm`, "89145651120")
+	// fmt.Println(matched) // true
+	// fmt.Println(err)
+
+	match, _ := regexp.MatchString("/[a-zа-я]/i", "иван")
+	fmt.Println(match)
+
+	//match, _ := regexp.MatchString("/^(7|8)+([0-9]){10}$/i", "89145651120")
+	//fmt.Println(match)
+
+	//регулярные выражения по проверке цифр и букв
+	//regexp_alph := /[a-zа-я\s]/i;
+	//regexp_num := /^[0-9 \-()+]{2,16}$/i;
+
+	// if (regexp_num.test(val) == true) {
+	//     const results = await seachPersonByPhone(query);
+	//     res.status(200).json({ results });
+
+	// } else if (regexp_alph.test(val) == true) {
+	//     const results = await seachPersonByName(query);
+	//     res.status(200).json({ results });
+	// }
 
 	// const seachPersonByPhone = (query) => {
 	//     return new Promise((resolve, reject) => {
@@ -526,3 +538,6 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 }
+
+//date := "05-12"
+//fmt.Println(date)

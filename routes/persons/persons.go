@@ -10,7 +10,6 @@ import (
 	"regexp"
 	"strconv"
 	"time"
-	//"github.com/gorilla/mux"
 )
 
 type Person struct {
@@ -130,68 +129,83 @@ func GetDatesToday(w http.ResponseWriter, r *http.Request) {
 
 func Search(w http.ResponseWriter, r *http.Request) {
 
-	//re := regexp.MustCompile(`(?:^|[^0-9])(1[34578][0-9]{9})(?:$|[^0-9])`)
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-	// matched, err := regexp.MatchString(`/^((\+7|7|8)+([0-9]){10})$/gm`, "89145651120")
-	// fmt.Println(matched) // true
-	// fmt.Println(err)
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
-	match, _ := regexp.MatchString("/[a-zа-я]/i", "иван")
-	fmt.Println(match)
+	if err != nil {
+		panic(err.Error())
+	}
 
-	//match, _ := regexp.MatchString("/^(7|8)+([0-9]){10}$/i", "89145651120")
-	//fmt.Println(match)
+	defer db.Close()
 
-	//регулярные выражения по проверке цифр и букв
-	//regexp_alph := /[a-zа-я\s]/i;
-	//regexp_num := /^[0-9 \-()+]{2,16}$/i;
+	query := r.URL.Query().Get("query")
+	//fmt.Println(query)
 
-	// if (regexp_num.test(val) == true) {
-	//     const results = await seachPersonByPhone(query);
-	//     res.status(200).json({ results });
+	regexp_alph := `^[ЁёА-я]{2,}\s?[ЁёА-я]{2,}?\s?[ЁёА-я]{2,}?$`
+	regexp_num := `^[[:digit:]]{2,11}$`
 
-	// } else if (regexp_alph.test(val) == true) {
-	//     const results = await seachPersonByName(query);
-	//     res.status(200).json({ results });
-	// }
+	var IsLetter = regexp.MustCompile(regexp_alph).MatchString
+	var IsNumber = regexp.MustCompile(regexp_num).MatchString
 
-	// const seachPersonByPhone = (query) => {
-	//     return new Promise((resolve, reject) => {
-	//         pool.query('SELECT *, date_format(date,"%Y-%m-%d") AS date FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN places USING(idperson) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE persons.cellular like "%' + query + '%" OR persons.business like "%' + query + '%" OR places.work like "%' + query + '%" AND iddep != 0 ORDER BY persons.idperson LIMIT 10', (err, results) => {
-	//             if (err) {
-	//                 return reject(err);
-	//             }
-	//             return resolve(results);
-	//         });
-	//     });
-	// }
+	if IsLetter(query) {
 
-	// const seachPersonByName = (query) => {
-	//     return new Promise((resolve, reject) => {
-	//         pool.query('SELECT *, date_format(date,"%Y-%m-%d") AS date FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN places USING(idperson) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE persons.name like "%' + query + '%" AND iddep != 0 ORDER BY persons.idperson LIMIT 10', (err, results) => {
-	//             if (err) {
-	//                 return reject(err);
-	//             }
-	//             return resolve(results);
-	//         });
-	//     });
-	// }
+		var persons []Person
 
-}
+		result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, pos, rank, iddep, idpos, idrank FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE name LIKE concat('%', ?, '%') AND iddep != 0 LIMIT 10", query)
 
-func Dismiss(w http.ResponseWriter, r *http.Request) {
+		if err != nil {
+			panic(err.Error())
+		}
 
-	// const dismissPerson = (idperson) => {
-	//     return new Promise((resolve, reject) => {
-	//         pool.query('UPDATE persons SET iddep="0", idpos="0", idrole="0" WHERE idperson="' + idperson + '"', (err, results) => {
-	//             if (err) {
-	//                 return reject(err);
-	//             }
-	//             return resolve(results);
-	//         });
-	//     });
-	// }
+		defer result.Close()
 
+		for result.Next() {
+
+			var person Person
+
+			err := result.Scan(&person.IDPERSON, &person.Name, &person.Date, &person.File, &person.Cellular, &person.Business, &person.Pos, &person.Rank, &person.Iddep, &person.Idpos, &person.Idrank)
+
+			if err != nil {
+				panic(err.Error())
+			}
+
+			persons = append(persons, person)
+		}
+
+		json.NewEncoder(w).Encode(persons)
+
+	} else if IsNumber(query) {
+
+		var persons []Person
+
+		result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, pos, rank, work, iddep, idpos, idrank FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN places USING(idperson) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE cellular LIKE concat('%', ?, '%')  OR business LIKE concat('%', ?, '%') OR work LIKE concat('%', ?, '%') AND iddep != 0 LIMIT 10", query, query, query)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		defer result.Close()
+
+		for result.Next() {
+
+			var person Person
+
+			err := result.Scan(&person.IDPERSON, &person.Name, &person.Date, &person.File, &person.Cellular, &person.Business, &person.Pos, &person.Rank, &person.Work, &person.Iddep, &person.Idpos, &person.Idrank)
+
+			if err != nil {
+				panic(err.Error())
+			}
+
+			persons = append(persons, person)
+		}
+
+		json.NewEncoder(w).Encode(persons)
+
+	}
 }
 
 func GetPersons(w http.ResponseWriter, r *http.Request) {
@@ -537,6 +551,21 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
+}
+
+func Dismiss(w http.ResponseWriter, r *http.Request) {
+
+	// const dismissPerson = (idperson) => {
+	//     return new Promise((resolve, reject) => {
+	//         pool.query('UPDATE persons SET iddep="0", idpos="0", idrole="0" WHERE idperson="' + idperson + '"', (err, results) => {
+	//             if (err) {
+	//                 return reject(err);
+	//             }
+	//             return resolve(results);
+	//         });
+	//     });
+	// }
+
 }
 
 //date := "05-12"

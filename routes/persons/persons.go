@@ -155,7 +155,7 @@ func Search(w http.ResponseWriter, r *http.Request) {
 
 		var persons []Person
 
-		result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, pos, rank, iddep, idpos, idrank FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE name LIKE concat('%', ?, '%') AND iddep != 0 LIMIT 10", query)
+		result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, pos, rank, sdep, iddep, idpos, idrank FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE name LIKE concat('%', ?, '%') AND iddep != 0 LIMIT 10", query)
 
 		if err != nil {
 			panic(err.Error())
@@ -167,7 +167,7 @@ func Search(w http.ResponseWriter, r *http.Request) {
 
 			var person Person
 
-			err := result.Scan(&person.IDPERSON, &person.Name, &person.Date, &person.File, &person.Cellular, &person.Business, &person.Pos, &person.Rank, &person.Iddep, &person.Idpos, &person.Idrank)
+			err := result.Scan(&person.IDPERSON, &person.Name, &person.Date, &person.File, &person.Cellular, &person.Business, &person.Pos, &person.Rank, &person.Sdep, &person.Iddep, &person.Idpos, &person.Idrank)
 
 			if err != nil {
 				panic(err.Error())
@@ -182,7 +182,7 @@ func Search(w http.ResponseWriter, r *http.Request) {
 
 		var persons []Person
 
-		result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, pos, rank, work, iddep, idpos, idrank FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN places USING(idperson) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE cellular LIKE concat('%', ?, '%')  OR business LIKE concat('%', ?, '%') OR work LIKE concat('%', ?, '%') AND iddep != 0 LIMIT 10", query, query, query)
+		result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, pos, rank, work, sdep, iddep, idpos, idrank FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN places USING(idperson) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE cellular LIKE concat('%', ?, '%')  OR business LIKE concat('%', ?, '%') OR work LIKE concat('%', ?, '%') AND iddep != 0 LIMIT 10", query, query, query)
 
 		if err != nil {
 			panic(err.Error())
@@ -194,7 +194,7 @@ func Search(w http.ResponseWriter, r *http.Request) {
 
 			var person Person
 
-			err := result.Scan(&person.IDPERSON, &person.Name, &person.Date, &person.File, &person.Cellular, &person.Business, &person.Pos, &person.Rank, &person.Work, &person.Iddep, &person.Idpos, &person.Idrank)
+			err := result.Scan(&person.IDPERSON, &person.Name, &person.Date, &person.File, &person.Cellular, &person.Business, &person.Pos, &person.Rank, &person.Work, &person.Sdep, &person.Iddep, &person.Idpos, &person.Idrank)
 
 			if err != nil {
 				panic(err.Error())
@@ -555,16 +555,7 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 
 func Dismiss(w http.ResponseWriter, r *http.Request) {
 
-	// const dismissPerson = (idperson) => {
-	//     return new Promise((resolve, reject) => {
-	//         pool.query('UPDATE persons SET iddep="0", idpos="0", idrole="0" WHERE idperson="' + idperson + '"', (err, results) => {
-	//             if (err) {
-	//                 return reject(err);
-	//             }
-	//             return resolve(results);
-	//         });
-	//     });
-	// }
+	//'UPDATE persons SET iddep="0", idpos="0", idrole="0" WHERE idperson="' + idperson + '"'
 
 }
 

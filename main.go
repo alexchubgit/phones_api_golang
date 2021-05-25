@@ -11,14 +11,11 @@ import (
 	"github.com/joho/godotenv"
 
 	"alexchubgit/api/routes/addr"
-	"alexchubgit/api/routes/certs"
 	"alexchubgit/api/routes/dep"
-	"alexchubgit/api/routes/docs"
 	"alexchubgit/api/routes/persons"
 	"alexchubgit/api/routes/places"
 	"alexchubgit/api/routes/pos"
 	"alexchubgit/api/routes/ranks"
-	"alexchubgit/api/routes/tokens"
 
 	"alexchubgit/api/routes/auth"
 	"alexchubgit/api/routes/middleware"
@@ -105,10 +102,6 @@ func main() {
 	router.HandleFunc("/dates_today", persons.GetDatesToday).Methods("GET")
 	router.HandleFunc("/search", persons.Search).Methods("GET")
 	router.HandleFunc("/dismiss", persons.Dismiss).Methods("PUT")
-
-	router.HandleFunc("/tokens", tokens.GetTokens).Methods("GET")
-	router.HandleFunc("/certs", certs.GetCert).Methods("GET")
-	router.HandleFunc("/docs", docs.GetDocs).Methods("GET")
 
 	router.HandleFunc("/login", auth.Login).Methods("POST")
 	router.HandleFunc("/getuser", auth.GetUser).Methods("GET")

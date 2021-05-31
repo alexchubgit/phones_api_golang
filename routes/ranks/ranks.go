@@ -11,7 +11,7 @@ import (
 )
 
 type Rank struct {
-	IDRANK string `json:"idrank"`
+	IDRANK int    `json:"idrank"`
 	Rank   string `json:"rank"`
 }
 
@@ -165,12 +165,20 @@ func CreateRank(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rank := r.FormValue("rank")
+	var cr Rank
+
+	err := json.NewDecoder(r.Body).Decode(&cr)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	rank := cr.Rank
 	fmt.Println(rank)
 
 	if rank == "" {
 		fmt.Println("Feild is empty")
-
 	}
 
 	res, err := db.Exec("INSERT INTO ranks (rank) VALUES (?)", rank)
@@ -208,16 +216,28 @@ func UpdateRank(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rank := r.FormValue("rank")
-	idrank := r.FormValue("idrank")
+	var er Rank
 
-	_, err := db.Exec("UPDATE ranks SET rank = ? WHERE idrank = ?", rank, idrank)
+	err := json.NewDecoder(r.Body).Decode(&er)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	rank := er.Rank
+	idrank := er.IDRANK
+
+	fmt.Println(rank)
+	fmt.Println(idrank)
+
+	_, err = db.Exec("UPDATE ranks SET rank = ? WHERE idrank = ?", rank, idrank)
 
 	if err != nil {
 		panic(err.Error())
 	}
 
-	fmt.Fprintf(w, "Rank with ID = %s was updated", idrank)
+	fmt.Fprintf(w, "Rank with ID = %s was updated", strconv.Itoa(idrank))
 }
 
 func DeleteRank(w http.ResponseWriter, r *http.Request) {

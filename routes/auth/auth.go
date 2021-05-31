@@ -4,21 +4,30 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
-	//"time"
-	//"crypto/md5"
-	//"encoding/hex"
+	"time"
+	//"log"
 
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
+
+	//"github.com/go-redis/redis/v7"
+	"github.com/twinj/uuid"
 )
 
 /*
 Структура прав доступа JWT
 */
+
 type Token struct {
+	AccessToken  string
+	RefreshToken string
+	AccessUuid   string
+	RefreshUuid  string
+	AtExpires    int64
+	RtExpires    int64
+
 	UserId uint
 	jwt.StandardClaims
 }
@@ -46,12 +55,20 @@ func HashPassword(password string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to hash password: %w", err)
 	}
+
 	return string(hashedPassword), nil
 }
 
-func CheckPassword(password string, hashedPassword string) error {
+func CheckPassword(password string, hashedPassword string) bool {
 
-	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+
+	return true
 
 }
 
@@ -70,11 +87,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
+	//Check Post query
 	if r.Method != "POST" {
 		fmt.Println("Not Post")
 		return
 	}
 
+	//Get body params
 	decoder := json.NewDecoder(r.Body)
 
 	var auth Auth
@@ -87,26 +106,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	login := auth.Login
 	password := auth.Password
 
-	hashFromDatabase, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	//Get hash from database
 
-	if err != nil {
-		log.Fatal(err)
-	}
+	var hash string
 
-	fmt.Println("Hash to store:", string(hashFromDatabase))
-
-	// Comparing the password with the hash
-	err = bcrypt.CompareHashAndPassword(hashFromDatabase, []byte(password))
-
-	if err == nil {
-		fmt.Println("OK")
-	}
-
-	//fmt.Println(err)
-
-	//"SELECT idperson, name, role FROM persons LEFT JOIN role USING(idrole) WHERE (`cellular` = ? AND `passwd` = ?) OR (`business` = ? AND `passwd` = ?) LIMIT 1"
-
-	result, err := db.Query("SELECT hash FROM persons WHERE `cellular` = ?  OR `business` = ? LIMIT 1", login, login)
+	result, err := db.Query("SELECT hash FROM persons WHERE cellular = ?  OR business = ? LIMIT 1", login, login)
 
 	if err != nil {
 		panic(err.Error())
@@ -114,50 +118,90 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	defer result.Close()
 
-	var account Account
-
 	for result.Next() {
 
-		err := result.Scan(&account.Hash)
+		err := result.Scan(&hash)
 
 		if err != nil {
 			panic(err.Error())
 		}
+	}
 
-		fmt.Println(err)
+	//Output hash from db and password
+	//fmt.Println(hash)
+	//fmt.Println(password)
+
+	//Check brypt
+
+	if CheckPassword(password, hash) {
+
+		fmt.Println("OK")
+
+	} else {
+
+		fmt.Println("Does not OK")
 
 	}
 
+	//Создать токен JWT
+
+	td := &Token{}
+	td.AtExpires = time.Now().Add(time.Minute * 60).Unix()
+	td.AccessUuid = uuid.NewV4().String()
+	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
+	td.RefreshUuid = uuid.NewV4().String()
+
+	atClaims := jwt.MapClaims{}
+	atClaims["authorized"] = true
+	atClaims["access_uuid"] = td.AccessUuid
+	atClaims["user_id"] = "userid"
+	atClaims["exp"] = td.AtExpires
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
+	tokenString, _ := token.SignedString([]byte(os.Getenv("secretKey")))
+	fmt.Println(tokenString)
+
+	//if (results.length == 0) {
+	//        res.json({ success: false, message: 'Логин или пароль указаны неверно' });
+	//   }
+
+	//вывод результата
+	values := map[string]string{"token": tokenString, "success": "true", "message": "Запрос выполнен. Токен получен"}
+	json.NewEncoder(w).Encode(values)
+
+	//"SELECT idperson, name, role FROM persons LEFT JOIN role USING(idrole) WHERE (`cellular` = ? AND `passwd` = ?) OR (`business` = ? AND `passwd` = ?) LIMIT 1"
+
+	//Creating Refresh Token
+	rtClaims := jwt.MapClaims{}
+	rtClaims["refresh_uuid"] = td.RefreshUuid
+	rtClaims["user_id"] = "userid"
+	rtClaims["exp"] = td.RtExpires
+
+	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
+	refreshToken, _ := rt.SignedString([]byte(os.Getenv("refreshKey")))
+	fmt.Println(refreshToken)
+
 }
 
-func GetUser(w http.ResponseWriter, r *http.Request) {
+func CheckSecurity(password string, next http.HandlerFunc) http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+		//fmt.Println("middleware")
+		//fmt.Println(password)
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "GET")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		token := req.Header.Get("Authorization")
+		fmt.Println(token)
 
-	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
-
-	if err != nil {
-		panic(err.Error())
+		// header := req.Header.Get("Super-Duper-Safe-Security")
+		// if header != "password" {
+		// 	fmt.Fprint(res, "Invalid password")
+		// 	res.WriteHeader(http.StatusUnauthorized)
+		// 	return
+		// }
+		next(res, req)
 	}
-
-	defer db.Close()
 }
 
-// const SECRET_KEY = process.env.SECRET_KEY
-
-// const Login = (login, password) => {
-//     return new Promise((resolve, reject) => {
-//         pool.query('SELECT * FROM persons LEFT JOIN role USING(idrole) WHERE `cellular` = "' + login + '" AND `passwd` = "' + password + '" OR `business` = "' + login + '" AND `passwd` = "' + password + '" LIMIT 1', (err, results) => {
-//             if (err) {
-//                 return reject(err);
-//             }
-//             return resolve(results);
-//         });
-//     });
-// }
+//'SELECT * FROM persons LEFT JOIN role USING(idrole) WHERE `cellular` = "' + login + '" AND `passwd` = "' + password + '" OR `business` = "' + login + '" AND `passwd` = "' + password + '" LIMIT 1'
 
 // //Авторизация
 // auth.post('/login', async (req, res) => {

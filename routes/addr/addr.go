@@ -169,14 +169,27 @@ func CreateAddr(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	addr := r.FormValue("addr")
-	lat := r.FormValue("lat")
-	lng := r.FormValue("lng")
-	postcode := r.FormValue("postcode")
+	var ca Addr
+
+	err := json.NewDecoder(r.Body).Decode(&ca)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	addr := ca.Addr
+	lat := ca.Lat
+	lng := ca.Lng
+	postcode := ca.Postcode
+
+	fmt.Println(addr)
+	fmt.Println(lat)
+	fmt.Println(lng)
+	fmt.Println(postcode)
 
 	if addr == "" {
 		fmt.Println("Feild is empty")
-
 	}
 
 	res, err := db.Exec("INSERT INTO addr (addr, lat, lng, postcode) VALUES (?, ?, ?, ?)", addr, lat, lng, postcode)
@@ -213,24 +226,38 @@ func UpdateAddr(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	idaddr := r.FormValue("idaddr")
-	addr := r.FormValue("addr")
-	lat := r.FormValue("lat")
-	lng := r.FormValue("lng")
-	postcode := r.FormValue("postcode")
+	var ea Addr
+
+	err := json.NewDecoder(r.Body).Decode(&ea)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	idaddr := ea.IDADDR
+	addr := ea.Addr
+	lat := ea.Lat
+	lng := ea.Lng
+	postcode := ea.Postcode
+
+	fmt.Println(addr)
+	fmt.Println(lat)
+	fmt.Println(lng)
+	fmt.Println(postcode)
+	fmt.Println(idaddr)
 
 	if addr == "" {
 		fmt.Println("Feild is empty")
-
 	}
 
-	_, err := db.Exec("UPDATE addr SET addr = ?, postcode = ?, lat = ?, lng = ? WHERE idaddr = ?", addr, postcode, lat, lng, idaddr)
+	_, err = db.Exec("UPDATE addr SET addr = ?, postcode = ?, lat = ?, lng = ? WHERE idaddr = ?", addr, postcode, lat, lng, idaddr)
 
 	if err != nil {
 		panic(err.Error())
 	}
 
-	fmt.Fprintf(w, "Addr with ID = %s was updated", idaddr)
+	fmt.Fprintf(w, "Addr with ID = %s was updated", strconv.Itoa(idaddr))
 
 }
 

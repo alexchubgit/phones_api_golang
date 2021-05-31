@@ -11,7 +11,7 @@ import (
 )
 
 type Pos struct {
-	IDPOS string `json:"idpos"`
+	IDPOS int    `json:"idpos"`
 	Pos   string `json:"pos"`
 }
 
@@ -166,12 +166,20 @@ func CreatePos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pos := r.FormValue("pos")
+	var cp Pos
+
+	err := json.NewDecoder(r.Body).Decode(&cp)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	pos := cp.Pos
 	fmt.Println(pos)
 
 	if pos == "" {
 		fmt.Println("Feild is empty")
-
 	}
 
 	res, err := db.Exec("INSERT INTO pos(pos) VALUES(?)", pos)
@@ -209,24 +217,40 @@ func UpdatePos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pos := r.FormValue("pos")
-	idpos := r.FormValue("idpos")
+	var ep Pos
 
-	_, err := db.Exec("UPDATE pos SET pos = ? WHERE idpos = ?", pos, idpos)
+	err := json.NewDecoder(r.Body).Decode(&ep)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	pos := ep.Pos
+	idpos := ep.IDPOS
+
+	fmt.Println(pos)
+	fmt.Println(idpos)
+
+	if pos == "" {
+		fmt.Println("Feild is empty")
+	}
+
+	_, err = db.Exec("UPDATE pos SET pos = ? WHERE idpos = ?", pos, idpos)
 
 	if err != nil {
 		panic(err.Error())
 	}
 
-	fmt.Fprintf(w, "Pos with ID = %s was updated", idpos)
+	fmt.Fprintf(w, "Pos with ID = %s was updated", strconv.Itoa(idpos))
 }
 
 func DeletePos(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Methods", "DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
 
 	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 

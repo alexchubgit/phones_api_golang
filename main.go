@@ -18,7 +18,6 @@ import (
 	"alexchubgit/api/routes/ranks"
 
 	"alexchubgit/api/routes/auth"
-	"alexchubgit/api/routes/middleware"
 )
 
 var (
@@ -59,16 +58,16 @@ func main() {
 	router.HandleFunc("/addr", addr.GetAddr).Methods("GET")
 	router.HandleFunc("/one_addr", addr.GetOneAddr).Methods("GET")
 	router.HandleFunc("/list_addr", addr.GetListAddr).Methods("GET")
-	router.HandleFunc("/add_addr", middleware.CheckSecurity("Password", addr.CreateAddr)).Methods("POST")
-	router.HandleFunc("/upd_addr", middleware.CheckSecurity("Password", addr.UpdateAddr)).Methods("PUT")
-	router.HandleFunc("/del_addr", middleware.CheckSecurity("Password", addr.DeleteAddr)).Methods("DELETE")
+	router.HandleFunc("/add_addr", auth.CheckSecurity("Password", addr.CreateAddr)).Methods("POST")
+	router.HandleFunc("/upd_addr", auth.CheckSecurity("Password", addr.UpdateAddr)).Methods("PUT")
+	router.HandleFunc("/del_addr", auth.CheckSecurity("Password", addr.DeleteAddr)).Methods("DELETE")
 
 	router.HandleFunc("/pos", pos.GetPoses).Methods("GET")
 	router.HandleFunc("/one_pos", pos.GetOnePos).Methods("GET")
 	router.HandleFunc("/list_pos", pos.GetListPos).Methods("GET")
 	router.HandleFunc("/add_pos", pos.CreatePos).Methods("POST")
 	router.HandleFunc("/upd_pos", pos.UpdatePos).Methods("PUT")
-	router.HandleFunc("/del_pos", pos.DeletePos).Methods("DELETE")
+	router.HandleFunc("/del_pos", auth.CheckSecurity("Password", pos.DeletePos)).Methods("DELETE")
 
 	router.HandleFunc("/ranks", ranks.GetRanks).Methods("GET")
 	router.HandleFunc("/one_rank", ranks.GetOneRank).Methods("GET")
@@ -104,7 +103,6 @@ func main() {
 	router.HandleFunc("/dismiss", persons.Dismiss).Methods("PUT")
 
 	router.HandleFunc("/login", auth.Login).Methods("POST")
-	router.HandleFunc("/getuser", auth.GetUser).Methods("GET")
 
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
 

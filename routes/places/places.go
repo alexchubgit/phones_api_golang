@@ -11,7 +11,7 @@ import (
 )
 
 type Place struct {
-	IDPLACE  string  `json:"idplace"`
+	IDPLACE  int     `json:"idplace"`
 	Place    string  `json:"place"`
 	Work     string  `json:"work"`
 	Internal string  `json:"internal"`
@@ -138,13 +138,30 @@ func CreatePlace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	place := r.FormValue("place")
-	work := r.FormValue("work")
-	internal := r.FormValue("internal")
-	ipphone := r.FormValue("ipphone")
-	arm := r.FormValue("arm")
-	idaddr := r.FormValue("idaddr")
-	idperson := r.FormValue("idperson")
+	var cp Place
+
+	err := json.NewDecoder(r.Body).Decode(&cp)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	place := cp.Place
+	work := cp.Work
+	internal := cp.Internal
+	ipphone := cp.Ipphone
+	arm := cp.Arm
+	idaddr := cp.Idaddr
+	idperson := cp.Idperson
+
+	fmt.Println(place)
+	fmt.Println(work)
+	fmt.Println(internal)
+	fmt.Println(ipphone)
+	fmt.Println(arm)
+	fmt.Println(idaddr)
+	fmt.Println(idperson)
 
 	if place == "" {
 		fmt.Println("Feild is empty")
@@ -185,26 +202,44 @@ func UpdatePlace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	idplace := r.FormValue("idplace")
-	place := r.FormValue("place")
-	work := r.FormValue("work")
-	internal := r.FormValue("internal")
-	ipphone := r.FormValue("ipphone")
-	arm := r.FormValue("arm")
-	idaddr := r.FormValue("idaddr")
-	idperson := r.FormValue("idperson")
+	var ep Place
+
+	err := json.NewDecoder(r.Body).Decode(&ep)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	idplace := ep.IDPLACE
+	place := ep.Place
+	work := ep.Work
+	internal := ep.Internal
+	ipphone := ep.Ipphone
+	arm := ep.Arm
+	idaddr := ep.Idaddr
+	idperson := ep.Idperson
+
+	fmt.Println(idplace)
+	fmt.Println(place)
+	fmt.Println(work)
+	fmt.Println(internal)
+	fmt.Println(ipphone)
+	fmt.Println(arm)
+	fmt.Println(idaddr)
+	fmt.Println(idperson)
 
 	if place == "" {
 		fmt.Println("Feild is empty")
 	}
 
-	_, err := db.Exec("UPDATE places SET place = ?, work = ?, internal = ?, ipphone = ?, arm = ?, idaddr = ?, idperson = ? WHERE idplace = ?", place, work, internal, ipphone, arm, idaddr, idperson, idplace)
+	_, err = db.Exec("UPDATE places SET place = ?, work = ?, internal = ?, ipphone = ?, arm = ?, idaddr = ?, idperson = ? WHERE idplace = ?", place, work, internal, ipphone, arm, idaddr, idperson, idplace)
 
 	if err != nil {
 		panic(err.Error())
 	}
 
-	fmt.Fprintf(w, "Rank with ID = %s was updated", idplace)
+	fmt.Fprintf(w, "Rank with ID = %s was updated", strconv.Itoa(idplace))
 
 }
 
@@ -266,18 +301,29 @@ func DeletePersonFromPlace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	idplace := r.FormValue("idplace")
+	var ep Place
 
-	if idplace == "" {
-		fmt.Println("Feild is empty")
+	err := json.NewDecoder(r.Body).Decode(&ep)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
-	_, err := db.Exec("UPDATE places SET idperson='0' WHERE idplace = ?", idplace)
+	idplace := ep.IDPLACE
+
+	fmt.Println(idplace)
+
+	//if idplace == "" {
+	//	fmt.Println("Feild is empty")
+	//}
+
+	_, err = db.Exec("UPDATE places SET idperson='0' WHERE idplace = ?", idplace)
 
 	if err != nil {
 		panic(err.Error())
 	}
 
-	fmt.Fprintf(w, "Rank with ID = %s was updated", idplace)
+	fmt.Fprintf(w, "Rank with ID = %s was updated", strconv.Itoa(idplace))
 
 }

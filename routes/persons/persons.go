@@ -55,7 +55,7 @@ func GetDatesWeek(w http.ResponseWriter, r *http.Request) {
 
 	var persons []Person
 
-	result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, pos, rank, iddep, idpos, idrank FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE date_format(now()+interval 7 day,'%m-%d')>date_format(date,'%m-%d') AND date_format(now(),'%m-%d')<date_format(date,'%m-%d') AND iddep != 0 ORDER BY `name`")
+	result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, pos, rank FROM persons LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE date_format(now()+interval 7 day,'%m-%d')>date_format(date,'%m-%d') AND date_format(now(),'%m-%d')<date_format(date,'%m-%d') AND iddep != 0 ORDER BY `name`")
 
 	if err != nil {
 		panic(err.Error())
@@ -67,7 +67,7 @@ func GetDatesWeek(w http.ResponseWriter, r *http.Request) {
 
 		var person Person
 
-		err := result.Scan(&person.IDPERSON, &person.Name, &person.Date, &person.File, &person.Cellular, &person.Business, &person.Pos, &person.Rank, &person.Iddep, &person.Idpos, &person.Idrank)
+		err := result.Scan(&person.IDPERSON, &person.Name, &person.Date, &person.File, &person.Pos, &person.Rank)
 
 		if err != nil {
 			panic(err.Error())
@@ -102,7 +102,7 @@ func GetDatesToday(w http.ResponseWriter, r *http.Request) {
 
 	var persons []Person
 
-	result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, pos, rank, iddep, idpos, idrank FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE DATE_FORMAT(date, '%m-%d') LIKE concat('%', ?) ORDER BY `name`", date)
+	result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, pos, rank FROM persons LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE DATE_FORMAT(date, '%m-%d') LIKE concat('%', ?) ORDER BY `name`", date)
 
 	if err != nil {
 		panic(err.Error())
@@ -114,7 +114,7 @@ func GetDatesToday(w http.ResponseWriter, r *http.Request) {
 
 		var person Person
 
-		err := result.Scan(&person.IDPERSON, &person.Name, &person.Date, &person.File, &person.Cellular, &person.Business, &person.Pos, &person.Rank, &person.Iddep, &person.Idpos, &person.Idrank)
+		err := result.Scan(&person.IDPERSON, &person.Name, &person.Date, &person.File, &person.Pos, &person.Rank)
 
 		if err != nil {
 			panic(err.Error())
@@ -155,7 +155,7 @@ func Search(w http.ResponseWriter, r *http.Request) {
 
 		var persons []Person
 
-		result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, pos, rank, sdep, iddep, idpos, idrank FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE name LIKE concat('%', ?, '%') AND iddep != 0 LIMIT 10", query)
+		result, err := db.Query("SELECT idperson, name, sdep FROM persons LEFT JOIN depart USING(iddep) WHERE name LIKE concat('%', ?, '%') AND iddep != 0 LIMIT 10", query)
 
 		if err != nil {
 			panic(err.Error())
@@ -167,7 +167,7 @@ func Search(w http.ResponseWriter, r *http.Request) {
 
 			var person Person
 
-			err := result.Scan(&person.IDPERSON, &person.Name, &person.Date, &person.File, &person.Cellular, &person.Business, &person.Pos, &person.Rank, &person.Sdep, &person.Iddep, &person.Idpos, &person.Idrank)
+			err := result.Scan(&person.IDPERSON, &person.Name, &person.Sdep)
 
 			if err != nil {
 				panic(err.Error())
@@ -182,7 +182,7 @@ func Search(w http.ResponseWriter, r *http.Request) {
 
 		var persons []Person
 
-		result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, pos, rank, work, sdep, iddep, idpos, idrank FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN places USING(idperson) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE cellular LIKE concat('%', ?, '%')  OR business LIKE concat('%', ?, '%') OR work LIKE concat('%', ?, '%') AND iddep != 0 LIMIT 10", query, query, query)
+		result, err := db.Query("SELECT idperson, name, sdep FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN places USING(idperson) WHERE cellular LIKE concat('%', ?, '%')  OR business LIKE concat('%', ?, '%') OR work LIKE concat('%', ?, '%') AND iddep != 0 LIMIT 10", query, query, query)
 
 		if err != nil {
 			panic(err.Error())
@@ -194,7 +194,7 @@ func Search(w http.ResponseWriter, r *http.Request) {
 
 			var person Person
 
-			err := result.Scan(&person.IDPERSON, &person.Name, &person.Date, &person.File, &person.Cellular, &person.Business, &person.Pos, &person.Rank, &person.Work, &person.Sdep, &person.Iddep, &person.Idpos, &person.Idrank)
+			err := result.Scan(&person.IDPERSON, &person.Name, &person.Sdep)
 
 			if err != nil {
 				panic(err.Error())
@@ -320,7 +320,7 @@ func GetListPersons(w http.ResponseWriter, r *http.Request) {
 
 	var persons []Person
 
-	result, err := db.Query("SELECT idperson, sdep FROM persons LEFT JOIN depart USING(iddep) WHERE name LIKE concat('%', ?, '%') LIMIT 5", query)
+	result, err := db.Query("SELECT idperson, name FROM persons LEFT JOIN depart USING(iddep) WHERE name LIKE concat('%', ?, '%') LIMIT 5", query)
 
 	if err != nil {
 		panic(err.Error())
@@ -332,7 +332,7 @@ func GetListPersons(w http.ResponseWriter, r *http.Request) {
 
 		var person Person
 
-		err := result.Scan(&person.IDPERSON, &person.Sdep)
+		err := result.Scan(&person.IDPERSON, &person.Name)
 
 		if err != nil {
 			panic(err.Error())
@@ -554,6 +554,19 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 }
 
 func Dismiss(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "PUT")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
 
 	//'UPDATE persons SET iddep="0", idpos="0", idrole="0" WHERE idperson="' + idperson + '"'
 

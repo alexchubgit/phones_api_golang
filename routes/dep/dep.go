@@ -89,7 +89,7 @@ func GetOneDep(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := db.Query("SELECT iddep, depart, sdep, addr, email, abbr, idparent, idaddr, COUNT(idperson) AS count FROM depart LEFT JOIN addr USING(idaddr) LEFT JOIN persons USING(iddep) WHERE iddep = ?", iddep)
+	result, err := db.Query("SELECT iddep, depart, sdep, addr, email, postcode, abbr, idparent, idaddr, COUNT(idperson) AS count FROM depart LEFT JOIN addr USING(idaddr) LEFT JOIN persons USING(iddep) WHERE iddep = ?", iddep)
 
 	if err != nil {
 		panic(err.Error())
@@ -101,7 +101,7 @@ func GetOneDep(w http.ResponseWriter, r *http.Request) {
 
 	for result.Next() {
 
-		err := result.Scan(&dep.IDDEP, &dep.Depart, &dep.Sdep, &dep.Addr, &dep.Email, &dep.Abbr, &dep.Idparent, &dep.Idaddr, &dep.Count)
+		err := result.Scan(&dep.IDDEP, &dep.Depart, &dep.Sdep, &dep.Addr, &dep.Email, &dep.Postcode, &dep.Abbr, &dep.Idparent, &dep.Idaddr, &dep.Count)
 
 		if err != nil {
 			panic(err.Error())
@@ -179,12 +179,28 @@ func CreateDep(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	depart := r.FormValue("depart")
-	sdep := r.FormValue("sdep")
-	email := r.FormValue("email")
-	abbr := r.FormValue("abbr")
-	idaddr := r.FormValue("idaddr")
-	idparent := r.FormValue("idparent")
+	var cd Dep
+
+	err := json.NewDecoder(r.Body).Decode(&cd)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	depart := cd.Depart
+	sdep := cd.Sdep
+	email := cd.Email
+	abbr := cd.Abbr
+	idaddr := cd.Idaddr
+	idparent := cd.Idparent
+
+	fmt.Println(depart)
+	fmt.Println(sdep)
+	fmt.Println(email)
+	fmt.Println(abbr)
+	fmt.Println(idaddr)
+	fmt.Println(idparent)
 
 	if depart == "" {
 		fmt.Println("Feild is empty")
@@ -224,25 +240,42 @@ func UpdateDep(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	iddep := r.FormValue("iddep")
-	depart := r.FormValue("depart")
-	sdep := r.FormValue("sdep")
-	email := r.FormValue("email")
-	abbr := r.FormValue("abbr")
-	idaddr := r.FormValue("idaddr")
-	idparent := r.FormValue("idparent")
+	var ed Dep
+
+	err := json.NewDecoder(r.Body).Decode(&ed)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	iddep := ed.IDDEP
+	depart := ed.Depart
+	sdep := ed.Sdep
+	email := ed.Email
+	abbr := ed.Abbr
+	idaddr := ed.Idaddr
+	idparent := ed.Idparent
+
+	fmt.Println(iddep)
+	fmt.Println(depart)
+	fmt.Println(sdep)
+	fmt.Println(email)
+	fmt.Println(abbr)
+	fmt.Println(idaddr)
+	fmt.Println(idparent)
 
 	if depart == "" {
 		fmt.Println("Feild is empty")
 	}
 
-	_, err := db.Exec("UPDATE depart SET depart = ?, sdep = ?, email = ?, abbr = ?, idaddr = ?, idparent = ? WHERE iddep = ?", depart, sdep, email, abbr, idaddr, idparent, iddep)
+	_, err = db.Exec("UPDATE depart SET depart = ?, sdep = ?, email = ?, abbr = ?, idaddr = ?, idparent = ? WHERE iddep = ?", depart, sdep, email, abbr, idaddr, idparent, iddep)
 
 	if err != nil {
 		panic(err.Error())
 	}
 
-	fmt.Fprintf(w, "Dep with ID = %s was updated", iddep)
+	fmt.Fprintf(w, "Dep with ID = %s was updated", strconv.Itoa(iddep))
 
 }
 

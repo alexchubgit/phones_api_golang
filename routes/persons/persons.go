@@ -17,10 +17,15 @@ type Person struct {
 	Name     string  `json:"name"`
 	Date     string  `json:"date"`
 	File     string  `json:"file"`
-	Pos      *string `json:"pos"`
-	Rank     *string `json:"rank"`
 	Cellular string  `json:"cellular"`
 	Business string  `json:"business"`
+	Passwd   string  `json:"passwd"`
+	Iddep    int     `json:"iddep"`
+	Idpos    int     `json:"idpos"`
+	Idrank   int     `json:"idrank"`
+	Idrole   int     `json:"idrole"`
+	Pos      *string `json:"pos"`
+	Rank     *string `json:"rank"`
 	Depart   *string `json:"depart"`
 	Sdep     *string `json:"sdep"`
 	Place    *string `json:"place"`
@@ -28,11 +33,6 @@ type Person struct {
 	Internal *string `json:"internal"`
 	Ipphone  *string `json:"ipphone"`
 	ARM      *string `json:"arm"`
-	Passwd   string  `json:"passwd"`
-	Iddep    int     `json:"iddep"`
-	Idpos    int     `json:"idpos"`
-	Idrank   int     `json:"idrank"`
-	Idrole   int     `json:"idrole"`
 }
 
 var db *sql.DB
@@ -232,7 +232,7 @@ func GetPersons(w http.ResponseWriter, r *http.Request) {
 
 	var persons []Person
 
-	result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, cellular, business, pos, rank, iddep, idpos, idrank FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE iddep like ? ORDER BY `name`", iddep)
+	result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, pos, rank FROM persons LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE iddep like ? ORDER BY `name`", iddep)
 
 	if err != nil {
 		panic(err.Error())
@@ -244,7 +244,7 @@ func GetPersons(w http.ResponseWriter, r *http.Request) {
 
 		var person Person
 
-		err := result.Scan(&person.IDPERSON, &person.Name, &person.Date, &person.File, &person.Cellular, &person.Business, &person.Pos, &person.Rank, &person.Iddep, &person.Idpos, &person.Idrank)
+		err := result.Scan(&person.IDPERSON, &person.Name, &person.Date, &person.File, &person.Pos, &person.Rank)
 
 		if err != nil {
 			panic(err.Error())
@@ -279,7 +279,7 @@ func GetOnePerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, pos, rank, cellular, business, depart, place, work, internal, ipphone, arm, iddep, idpos, idrank FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN places USING(idperson) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE idperson = ? LIMIT 1", idperson)
+	result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, pos, rank, cellular, business, depart, sdep, place, work, internal, ipphone, arm, iddep, idpos, idrank FROM persons LEFT JOIN depart USING(iddep) LEFT JOIN places USING(idperson) LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE idperson = ? LIMIT 1", idperson)
 
 	if err != nil {
 		panic(err.Error())
@@ -291,7 +291,7 @@ func GetOnePerson(w http.ResponseWriter, r *http.Request) {
 
 	for result.Next() {
 
-		err := result.Scan(&person.IDPERSON, &person.Name, &person.Date, &person.File, &person.Pos, &person.Rank, &person.Cellular, &person.Business, &person.Depart, &person.Place, &person.Work, &person.Internal, &person.Ipphone, &person.ARM, &person.Iddep, &person.Idpos, &person.Idrank)
+		err := result.Scan(&person.IDPERSON, &person.Name, &person.Date, &person.File, &person.Pos, &person.Rank, &person.Cellular, &person.Business, &person.Depart, &person.Sdep, &person.Place, &person.Work, &person.Internal, &person.Ipphone, &person.ARM, &person.Iddep, &person.Idpos, &person.Idrank)
 
 		if err != nil {
 			panic(err.Error())
@@ -409,6 +409,23 @@ func DeletePerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var person Person
+
+	err = db.QueryRow("SELECT file FROM persons WHERE idperson = ?", idperson).Scan(&person.File)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	path := "./static/photo/" + person.File
+	err = os.Remove(path)
+
+	if err != nil {
+		fmt.Println(err)
+		//return
+	}
+
+	//fmt.Println("File" + person.File + "successfully deleted")
+
 	stmt, err := db.Prepare("DELETE FROM persons WHERE idperson = ?")
 
 	if err != nil {
@@ -421,101 +438,176 @@ func DeletePerson(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 
-	fmt.Fprintf(w, "Pos with ID = %s was deleted", strconv.Itoa(idperson))
+	fmt.Fprintf(w, "Person with ID = %s was deleted", strconv.Itoa(idperson))
+
+	//res.json({ success: true, message: 'Запрос выполнен' });
+}
+
+func Dismiss(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "PUT")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
+
+	var dp Person
+
+	err := json.NewDecoder(r.Body).Decode(&dp)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	idperson := dp.IDPERSON
+	fmt.Println(idperson)
+
+	tx, err := db.Begin()
+	if err != nil {
+		panic(err.Error())
+	}
+
+	// insert a record into table1
+	_, err = tx.Exec("UPDATE persons SET iddep='0', idpos='0', idrole='0' WHERE idperson=?", idperson)
+	if err != nil {
+		tx.Rollback()
+		panic(err.Error())
+	}
+
+	// insert record into table2, referencing the first record from table1
+	_, err = tx.Exec("UPDATE places SET idperson='0' WHERE idperson=?", idperson)
+	if err != nil {
+		tx.Rollback()
+		panic(err.Error())
+	}
+
+	// commit the transaction
+	tx.Commit()
+
+	fmt.Println("Done.")
+
+	//({ success: true, message: 'Запрос выполнен' });
 }
 
 func CreatePerson(w http.ResponseWriter, r *http.Request) {
-
-	// const addPersonWithoutFile = (name, date, cellular, business, iddep, idpos, idrank) => {
-	//     return new Promise((resolve, reject) => {
-	//         pool.query('INSERT INTO persons (name, date, cellular, business, iddep, idpos, idrank, file) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [name, date, cellular, business, iddep, idpos, idrank, newname], (err, results) => {
-	//             if (err) {
-	//                 return reject(err);
-	//             }
-	//             return resolve(results);
-	//         });
-	//     });
-	// }
-
-	// const addPerson = (name, date, cellular, business, iddep, idpos, idrank, file) => {
-	//     return new Promise((resolve, reject) => {
-	//         pool.query('INSERT INTO persons (name, date, cellular, business, iddep, idpos, idrank, file) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [name, date, cellular, business, iddep, idpos, idrank, file], (err, results) => {
-	//             if (err) {
-	//                 return reject(err);
-	//             }
-	//             return resolve(results);
-	//         });
-	//     });
-	// }
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-	// db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
 
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
+	if err != nil {
+		panic(err.Error())
+	}
 
-	// defer db.Close()
+	defer db.Close()
+
+	if r.Method != "POST" {
+		fmt.Println("Not POST")
+		return
+	}
 
 	fmt.Println("method:", r.Method)
 
-	if r.Method == "GET" {
-
-		// crutime := time.Now().Unix()
-
-		// h := md5.New()
-
-		// io.WriteString(h, strconv.FormatInt(crutime, 10))
-
-		// token := fmt.Sprintf("%x", h.Sum(nil))
-
-		// t, _ := template.ParseFiles("upload.gtpl")
-
-		// t.Execute(w, token)
-
-	} else {
-
-		if err := r.ParseMultipartForm(32 << 20); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		file, handler, err := r.FormFile("file")
-
-		fmt.Println(r.FormValue("name"))
-		fmt.Println(r.FormValue("date"))
-
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-
-		defer file.Close()
-
-		fmt.Fprintf(w, "%v", handler.Header)
-		fmt.Printf("Uploaded File: %+v\n", handler.Filename)
-		fmt.Printf("File Size: %+v\n", handler.Size)
-		fmt.Printf("MIME Header: %+v\n", handler.Header)
-
-		f, err := os.OpenFile("./test/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
-
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-
-		defer f.Close()
-
-		io.Copy(f, file)
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
+
+	file, handler, err := r.FormFile("file")
+
+	fmt.Println(r.FormValue("name"))
+	fmt.Println(r.FormValue("date"))
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	defer file.Close()
+
+	fmt.Fprintf(w, "%v", handler.Header)
+	fmt.Printf("Uploaded File: %+v\n", handler.Filename)
+	fmt.Printf("File Size: %+v\n", handler.Size)
+	fmt.Printf("MIME Header: %+v\n", handler.Header)
+
+	f, err := os.OpenFile("./test/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	defer f.Close()
+
+	io.Copy(f, file)
+
+	//'INSERT INTO persons (name, date, cellular, business, iddep, idpos, idrank, file) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [name, date, cellular, business, iddep, idpos, idrank, newname]
+	//'INSERT INTO persons (name, date, cellular, business, iddep, idpos, idrank, file) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [name, date, cellular, business, iddep, idpos, idrank, file]
 
 }
 
 func UpdatePerson(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "PUT")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer db.Close()
+
+	if r.Method != "PUT" {
+		fmt.Println("Not PUT")
+		return
+	}
+
+	var ep Person
+
+	err := json.NewDecoder(r.Body).Decode(&ep)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	idperson := ep.IDPERSON
+	name := ep.Name
+	date := ep.Date
+	cellular := ep.Cellular
+	business := ep.Business
+	iddep := ep.Iddep
+	idpos := ep.Idpos
+	idrank := ep.Idrank
+
+	//file
+
+	fmt.Println(idperson)
+	fmt.Println(name)
+	fmt.Println(date)
+	fmt.Println(cellular)
+	fmt.Println(business)
+	fmt.Println(iddep)
+	fmt.Println(idpos)
+	fmt.Println(idrank)
+
+	fmt.Println(r.FormValue("name"))
+	fmt.Println(r.FormValue("date"))
 
 	// const updPersonWithoutFile = (name, date, cellular, business, iddep, idpos, idrank) => {
 	//     return new Promise((resolve, reject) => {
@@ -538,39 +630,4 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 	//         });
 	//     });
 	// }
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "PUT")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
-	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
-
-	if err != nil {
-		panic(err.Error())
-	}
-
-	defer db.Close()
 }
-
-func Dismiss(w http.ResponseWriter, r *http.Request) {
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "PUT")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
-	db, err = sql.Open("mysql", os.Getenv("MYSQL_URL"))
-
-	if err != nil {
-		panic(err.Error())
-	}
-
-	defer db.Close()
-
-	//'UPDATE persons SET iddep="0", idpos="0", idrole="0" WHERE idperson="' + idperson + '"'
-
-}
-
-//date := "05-12"
-//fmt.Println(date)

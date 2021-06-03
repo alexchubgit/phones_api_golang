@@ -110,19 +110,3 @@ func main() {
 	http.ListenAndServe(":8000", router)
 
 }
-
-//"gopkg.in/guregu/null.v4/zero"
-//Name     zero.String `json:"name"`
-//Name     NullString  `json:"name"`
-
-// type NullString struct {
-// 	sql.NullString
-// }
-
-// MarshalJSON for NullString
-// func (ns *NullString) MarshalJSON() ([]byte, error) {
-// 	if !ns.Valid {
-// 		return []byte("null"), nil
-// 	}
-// 	return json.Marshal(ns.String)
-// }

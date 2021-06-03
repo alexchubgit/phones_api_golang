@@ -188,8 +188,8 @@ func CheckSecurity(password string, next http.HandlerFunc) http.HandlerFunc {
 		//fmt.Println("middleware")
 		//fmt.Println(password)
 
-		token := req.Header.Get("Authorization")
-		fmt.Println(token)
+		//token := req.Header.Get("Authorization")
+		//fmt.Println(token)
 
 		// header := req.Header.Get("Super-Duper-Safe-Security")
 		// if header != "password" {

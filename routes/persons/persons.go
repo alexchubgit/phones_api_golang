@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io"
+	//"io"
 	"net/http"
 	"os"
 	"regexp"
@@ -513,7 +513,7 @@ func CreatePerson(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	if r.Method != "POST" {
-		fmt.Println("Not POST")
+		fmt.Println("Not Post")
 		return
 	}
 
@@ -524,37 +524,41 @@ func CreatePerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, handler, err := r.FormFile("file")
-
 	fmt.Println(r.FormValue("name"))
 	fmt.Println(r.FormValue("date"))
+	fmt.Println(r.FormValue("cellular"))
+	fmt.Println(r.FormValue("business"))
+	fmt.Println(r.FormValue("iddep"))
+	fmt.Println(r.FormValue("idpos"))
+	fmt.Println(r.FormValue("idrank"))
 
+	file, handler, err := r.FormFile("file")
 	if err != nil {
 		fmt.Println(err)
-		return
 	}
 
-	defer file.Close()
+	//defer file.Close()
 
-	fmt.Fprintf(w, "%v", handler.Header)
-	fmt.Printf("Uploaded File: %+v\n", handler.Filename)
+	// //fmt.Fprintf(w, "%v", handler.Header)
+	//fmt.Printf("Uploaded File: %+v\n", handler.Filename)
 	fmt.Printf("File Size: %+v\n", handler.Size)
-	fmt.Printf("MIME Header: %+v\n", handler.Header)
+	//fmt.Printf("MIME Header: %+v\n", handler.Header)
 
-	f, err := os.OpenFile("./test/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+	// f, err := os.OpenFile("./test/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
 
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	//return
+	// }
 
-	defer f.Close()
+	// defer f.Close()
 
-	io.Copy(f, file)
+	// io.Copy(f, file)
 
 	//'INSERT INTO persons (name, date, cellular, business, iddep, idpos, idrank, file) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [name, date, cellular, business, iddep, idpos, idrank, newname]
 	//'INSERT INTO persons (name, date, cellular, business, iddep, idpos, idrank, file) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [name, date, cellular, business, iddep, idpos, idrank, file]
 
+	fmt.Println("Done.")
 }
 
 func UpdatePerson(w http.ResponseWriter, r *http.Request) {
@@ -577,57 +581,56 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var ep Person
+	fmt.Println("method:", r.Method)
 
-	err := json.NewDecoder(r.Body).Decode(&ep)
-
-	if err != nil {
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	idperson := ep.IDPERSON
-	name := ep.Name
-	date := ep.Date
-	cellular := ep.Cellular
-	business := ep.Business
-	iddep := ep.Iddep
-	idpos := ep.Idpos
-	idrank := ep.Idrank
-
-	//file
-
-	fmt.Println(idperson)
-	fmt.Println(name)
-	fmt.Println(date)
-	fmt.Println(cellular)
-	fmt.Println(business)
-	fmt.Println(iddep)
-	fmt.Println(idpos)
-	fmt.Println(idrank)
-
 	fmt.Println(r.FormValue("name"))
 	fmt.Println(r.FormValue("date"))
+	fmt.Println(r.FormValue("cellular"))
+	fmt.Println(r.FormValue("business"))
+	fmt.Println(r.FormValue("iddep"))
+	fmt.Println(r.FormValue("idpos"))
+	fmt.Println(r.FormValue("idrank"))
 
-	// const updPersonWithoutFile = (name, date, cellular, business, iddep, idpos, idrank) => {
-	//     return new Promise((resolve, reject) => {
-	//         pool.query('UPDATE persons SET name="' + name + '", date="' + date + '", cellular="' + cellular + '", business="' + business + '", iddep="' + iddep + '", idpos="' + idpos + '", idrank="' + idrank + '" WHERE idperson="' + idperson + '"', (err, results) => {
-	//             if (err) {
-	//                 return reject(err);
-	//             }
-	//             return resolve(results);
-	//         });
-	//     });
+	file, handler, err := r.FormFile("file")
+
+	if err != nil {
+		fmt.Println(err)
+		//return
+	}
+
+	defer file.Close()
+
+	// //fmt.Fprintf(w, "%v", handler.Header)
+	fmt.Printf("Uploaded File: %+v\n", handler.Filename)
+	// fmt.Printf("File Size: %+v\n", handler.Size)
+	// //fmt.Printf("MIME Header: %+v\n", handler.Header)
+
+	// f, err := os.OpenFile("./test/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	//return
 	// }
 
-	// const updPerson = (name, date, cellular, business, iddep, idpos, idrank, file) => {
-	//     return new Promise((resolve, reject) => {
-	//         pool.query('UPDATE persons SET name="' + name + '", date="' + date + '", cellular="' + cellular + '", business="' + business + '", iddep="' + iddep + '", idpos="' + idpos + '", idrank="' + idrank + '" WHERE idperson="' + idperson + '"', (err, results) => {
-	//             if (err) {
-	//                 return reject(err);
-	//             }
-	//             return resolve(results);
-	//         });
-	//     });
-	// }
+	// defer f.Close()
+
+	// io.Copy(f, file)
+
+	// //'UPDATE persons SET name="' + name + '", date="' + date + '", cellular="' + cellular + '", business="' + business + '", iddep="' + iddep + '", idpos="' + idpos + '", idrank="' + idrank + '" WHERE idperson="' + idperson + '"', (err, results) => {
+
+	// //'UPDATE persons SET name="' + name + '", date="' + date + '", cellular="' + cellular + '", business="' + business + '", iddep="' + iddep + '", idpos="' + idpos + '", idrank="' + idrank + '" WHERE idperson="' + idperson + '"', (err, results) => {
+
+	fmt.Println("Done.")
 }
+
+// var buff bytes.Buffer
+// fileSize, err := buff.ReadFrom(file)
+// if err != nil {
+// 	fmt.Println(err)
+// }
+// fmt.Println(fileSize)

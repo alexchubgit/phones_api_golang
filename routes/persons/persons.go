@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+
 	//"io"
 	"net/http"
 	"os"
@@ -537,7 +538,7 @@ func CreatePerson(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 	}
 
-	//defer file.Close()
+	defer file.Close()
 
 	// //fmt.Fprintf(w, "%v", handler.Header)
 	//fmt.Printf("Uploaded File: %+v\n", handler.Filename)

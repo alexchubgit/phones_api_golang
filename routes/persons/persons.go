@@ -97,13 +97,15 @@ func GetDatesToday(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	now := time.Now()
-	month := strconv.Itoa(int(now.Month()))
-	day := strconv.Itoa(now.Day())
-	date := month + "-" + day
+	date := now.Format("01-02")
+	//month := strconv.Itoa(int(now.Month()))
+	//day := strconv.Itoa(now.Day())
+
+	//fmt.Println(now.Format("01-02"))
 
 	var persons []Person
 
-	result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, pos, rank FROM persons LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE DATE_FORMAT(date, '%m-%d') LIKE concat('%', ?) ORDER BY `name`", date)
+	result, err := db.Query("SELECT idperson, name, date_format(date,'%Y-%m-%d') AS date, IF(file IS NULL or file = '', 'photo.png', file) as file, pos, rank FROM persons LEFT JOIN pos USING(idpos) LEFT JOIN ranks USING(idrank) WHERE DATE_FORMAT(date, '%m-%d') LIKE ? ORDER BY `name`", date)
 
 	if err != nil {
 		panic(err.Error())

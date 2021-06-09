@@ -94,7 +94,7 @@ func GetDatesToday(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 
-	defer db.Close()
+	//defer db.Close()
 
 	now := time.Now()
 	date := now.Format("01-02")

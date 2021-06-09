@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+
 	//"log"
 
 	"github.com/dgrijalva/jwt-go"
@@ -60,6 +61,15 @@ func HashPassword(password string) (string, error) {
 }
 
 func CheckPassword(password string, hashedPassword string) bool {
+
+	if (hashedPassword == "") || (password == "") {
+		fmt.Println("Hash & password empty")
+
+		fmt.Println("hashedPassword: " + hashedPassword)
+		fmt.Println("password: " + password)
+
+		return false
+	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 
@@ -130,6 +140,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	//Output hash from db and password
 	//fmt.Println(hash)
 	//fmt.Println(password)
+	fmt.Println(HashPassword(password))
 
 	//Check brypt
 
@@ -159,7 +170,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("secretKey")))
-	fmt.Println(tokenString)
+	//fmt.Println(tokenString)
 
 	//if (results.length == 0) {
 	//        res.json({ success: false, message: 'Логин или пароль указаны неверно' });
@@ -177,9 +188,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	rtClaims["user_id"] = "userid"
 	rtClaims["exp"] = td.RtExpires
 
-	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
-	refreshToken, _ := rt.SignedString([]byte(os.Getenv("refreshKey")))
-	fmt.Println(refreshToken)
+	//rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
+	//refreshToken, _ := rt.SignedString([]byte(os.Getenv("refreshKey")))
+	//fmt.Println(refreshToken)
 
 }
 

@@ -552,7 +552,7 @@ func CreatePerson(w http.ResponseWriter, r *http.Request) {
 		idpos := r.FormValue("idpos")
 		idrank := r.FormValue("idrank")
 
-		res, err := db.Exec("INSERT INTO persons (name, date, cellular, business, hash, iddep, idpos, idrank, file) VALUES (?, ?, ?, ?, '', ?, ?, ?, 'photo.png')", name, date, cellular, business, iddep, idpos, idrank)
+		res, err := db.Exec("INSERT INTO persons (name, date, cellular, business, hash, iddep, idpos, idrank, file) VALUES (?, ?, ?, ?, '', ?, ?, ?, '')", name, date, cellular, business, iddep, idpos, idrank)
 		if err != nil {
 			panic(err)
 		}

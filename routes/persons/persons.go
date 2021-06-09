@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
 
 	//"io"
 	"net/http"
@@ -536,32 +538,75 @@ func CreatePerson(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(r.FormValue("idrank"))
 
 	file, handler, err := r.FormFile("file")
+
 	if err != nil {
+		fmt.Println("Error Retrieving the File")
 		fmt.Println(err)
+		//return
+
+		name := r.FormValue("name")
+		date := r.FormValue("date")
+		cellular := r.FormValue("cellular")
+		business := r.FormValue("business")
+		iddep := r.FormValue("iddep")
+		idpos := r.FormValue("idpos")
+		idrank := r.FormValue("idrank")
+
+		res, err := db.Exec("INSERT INTO persons (name, date, cellular, business, hash, iddep, idpos, idrank, file) VALUES (?, ?, ?, ?, '', ?, ?, ?, 'photo.png')", name, date, cellular, business, iddep, idpos, idrank)
+		if err != nil {
+			panic(err)
+		}
+
+		lastId, err := res.LastInsertId()
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Printf("The last inserted row id: %d\n", lastId)
+
+	} else {
+
+		//fmt.Fprintf(w, "%v", handler.Header)
+		fmt.Printf("Uploaded File: %+v\n", handler.Filename)
+		fmt.Printf("File Size: %+v\n", handler.Size)
+		//fmt.Printf("MIME Header: %+v\n", handler.Header)
+
+		f, err := os.OpenFile("./static/photo/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+
+		if err != nil {
+			fmt.Println(err)
+			//return
+		}
+
+		defer f.Close()
+		io.Copy(f, file)
+
+		name := r.FormValue("name")
+		date := r.FormValue("date")
+		cellular := r.FormValue("cellular")
+		business := r.FormValue("business")
+		iddep := r.FormValue("iddep")
+		idpos := r.FormValue("idpos")
+		idrank := r.FormValue("idrank")
+
+		res, err := db.Exec("INSERT INTO persons (name, date, cellular, business, hash, iddep, idpos, idrank, file) VALUES (?, ?, ?, ?, '', ?, ?, ?, ?)", name, date, cellular, business, iddep, idpos, idrank, handler.Filename)
+		if err != nil {
+			panic(err)
+		}
+
+		lastId, err := res.LastInsertId()
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Printf("The last inserted row id: %d\n", lastId)
+		//fmt.Println("Done.")
+
+		defer file.Close()
 	}
 
-	defer file.Close()
-
-	// //fmt.Fprintf(w, "%v", handler.Header)
-	//fmt.Printf("Uploaded File: %+v\n", handler.Filename)
-	fmt.Printf("File Size: %+v\n", handler.Size)
-	//fmt.Printf("MIME Header: %+v\n", handler.Header)
-
-	// f, err := os.OpenFile("./test/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
-
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	//return
-	// }
-
-	// defer f.Close()
-
-	// io.Copy(f, file)
-
-	//'INSERT INTO persons (name, date, cellular, business, iddep, idpos, idrank, file) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [name, date, cellular, business, iddep, idpos, idrank, newname]
-	//'INSERT INTO persons (name, date, cellular, business, iddep, idpos, idrank, file) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [name, date, cellular, business, iddep, idpos, idrank, file]
-
-	fmt.Println("Done.")
 }
 
 func UpdatePerson(w http.ResponseWriter, r *http.Request) {
@@ -624,9 +669,9 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 
 	// io.Copy(f, file)
 
-	// //'UPDATE persons SET name="' + name + '", date="' + date + '", cellular="' + cellular + '", business="' + business + '", iddep="' + iddep + '", idpos="' + idpos + '", idrank="' + idrank + '" WHERE idperson="' + idperson + '"', (err, results) => {
+	//'UPDATE persons SET name="' + name + '", date="' + date + '", cellular="' + cellular + '", business="' + business + '", iddep="' + iddep + '", idpos="' + idpos + '", idrank="' + idrank + '" WHERE idperson="' + idperson + '"'
 
-	// //'UPDATE persons SET name="' + name + '", date="' + date + '", cellular="' + cellular + '", business="' + business + '", iddep="' + iddep + '", idpos="' + idpos + '", idrank="' + idrank + '" WHERE idperson="' + idperson + '"', (err, results) => {
+	//'UPDATE persons SET name="' + name + '", date="' + date + '", cellular="' + cellular + '", business="' + business + '", iddep="' + iddep + '", idpos="' + idpos + '", idrank="' + idrank + '" WHERE idperson="' + idperson + '"'
 
 	fmt.Println("Done.")
 }

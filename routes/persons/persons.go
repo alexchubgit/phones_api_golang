@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-
-	//"io"
 	"net/http"
 	"os"
 	"regexp"
@@ -529,14 +527,6 @@ func CreatePerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(r.FormValue("name"))
-	fmt.Println(r.FormValue("date"))
-	fmt.Println(r.FormValue("cellular"))
-	fmt.Println(r.FormValue("business"))
-	fmt.Println(r.FormValue("iddep"))
-	fmt.Println(r.FormValue("idpos"))
-	fmt.Println(r.FormValue("idrank"))
-
 	file, handler, err := r.FormFile("file")
 
 	if err != nil {
@@ -636,44 +626,67 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(r.FormValue("name"))
-	fmt.Println(r.FormValue("date"))
-	fmt.Println(r.FormValue("cellular"))
-	fmt.Println(r.FormValue("business"))
-	fmt.Println(r.FormValue("iddep"))
-	fmt.Println(r.FormValue("idpos"))
-	fmt.Println(r.FormValue("idrank"))
-
 	file, handler, err := r.FormFile("file")
 
 	if err != nil {
+		fmt.Println("Error Retrieving the File")
 		fmt.Println(err)
 		//return
+
+		idperson := r.FormValue("idperson")
+		name := r.FormValue("name")
+		date := r.FormValue("date")
+		cellular := r.FormValue("cellular")
+		business := r.FormValue("business")
+		iddep := r.FormValue("iddep")
+		idpos := r.FormValue("idpos")
+		idrank := r.FormValue("idrank")
+
+		_, err = db.Exec("UPDATE persons SET name=?, date=?, cellular=?, business=?, iddep=?, idpos=?, idrank=? WHERE idperson=?", name, date, cellular, business, iddep, idpos, idrank, idperson)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		fmt.Fprintf(w, "Person with ID = %s was updated", idperson)
+
+	} else {
+
+		//fmt.Fprintf(w, "%v", handler.Header)
+		fmt.Printf("Uploaded File: %+v\n", handler.Filename)
+		fmt.Printf("File Size: %+v\n", handler.Size)
+		//fmt.Printf("MIME Header: %+v\n", handler.Header)
+
+		f, err := os.OpenFile("./static/photo/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+
+		if err != nil {
+			fmt.Println(err)
+			//return
+		}
+
+		defer f.Close()
+		io.Copy(f, file)
+
+		idperson := r.FormValue("idperson")
+		name := r.FormValue("name")
+		date := r.FormValue("date")
+		cellular := r.FormValue("cellular")
+		business := r.FormValue("business")
+		iddep := r.FormValue("iddep")
+		idpos := r.FormValue("idpos")
+		idrank := r.FormValue("idrank")
+
+		_, err = db.Exec("UPDATE persons SET name=?, date=?, cellular=?, business=?, iddep=?, idpos=?, idrank=?, file=? WHERE idperson=?", name, date, cellular, business, iddep, idpos, idrank, handler.Filename, idperson)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		fmt.Fprintf(w, "Person with ID = %s was updated", idperson)
+
+		defer file.Close()
 	}
 
-	defer file.Close()
-
-	// //fmt.Fprintf(w, "%v", handler.Header)
-	fmt.Printf("Uploaded File: %+v\n", handler.Filename)
-	// fmt.Printf("File Size: %+v\n", handler.Size)
-	// //fmt.Printf("MIME Header: %+v\n", handler.Header)
-
-	// f, err := os.OpenFile("./test/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
-
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	//return
-	// }
-
-	// defer f.Close()
-
-	// io.Copy(f, file)
-
-	//'UPDATE persons SET name="' + name + '", date="' + date + '", cellular="' + cellular + '", business="' + business + '", iddep="' + iddep + '", idpos="' + idpos + '", idrank="' + idrank + '" WHERE idperson="' + idperson + '"'
-
-	//'UPDATE persons SET name="' + name + '", date="' + date + '", cellular="' + cellular + '", business="' + business + '", iddep="' + iddep + '", idpos="' + idpos + '", idrank="' + idrank + '" WHERE idperson="' + idperson + '"'
-
-	fmt.Println("Done.")
 }
 
 // var buff bytes.Buffer
@@ -682,3 +695,11 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 // 	fmt.Println(err)
 // }
 // fmt.Println(fileSize)
+
+// fmt.Println(r.FormValue("name"))
+// fmt.Println(r.FormValue("date"))
+// fmt.Println(r.FormValue("cellular"))
+// fmt.Println(r.FormValue("business"))
+// fmt.Println(r.FormValue("iddep"))
+// fmt.Println(r.FormValue("idpos"))
+// fmt.Println(r.FormValue("idrank"))

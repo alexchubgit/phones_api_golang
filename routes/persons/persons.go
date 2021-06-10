@@ -622,8 +622,6 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, handler, err := r.FormFile("file")
-
 	idperson := r.FormValue("idperson")
 	name := r.FormValue("name")
 	date := r.FormValue("date")
@@ -632,6 +630,28 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 	iddep := r.FormValue("iddep")
 	idpos := r.FormValue("idpos")
 	idrank := r.FormValue("idrank")
+
+	//удаляем старый файл
+
+	var person Person
+
+	err = db.QueryRow("SELECT file FROM persons WHERE idperson = ?", idperson).Scan(&person.File)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	if person.File != "" {
+
+		path := "./static/photo/" + person.File
+		err = os.Remove(path)
+
+		if err != nil {
+			fmt.Println(err)
+			//return
+		}
+	}
+
+	file, handler, err := r.FormFile("file")
 
 	if err != nil {
 		//fmt.Println("Error Retrieving the File")
@@ -652,6 +672,8 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 		//fmt.Printf("Uploaded File: %+v\n", handler.Filename)
 		//fmt.Printf("File Size: %+v\n", handler.Size)
 		//fmt.Printf("MIME Header: %+v\n", handler.Header)
+
+		//Загружаем новый файл
 
 		f, err := os.OpenFile("./static/photo/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
 

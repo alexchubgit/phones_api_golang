@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -617,19 +618,19 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("method:", r.Method)
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	idperson := r.FormValue("idperson")
-	name := r.FormValue("name")
-	date := r.FormValue("date")
-	cellular := r.FormValue("cellular")
-	business := r.FormValue("business")
-	iddep := r.FormValue("iddep")
-	idpos := r.FormValue("idpos")
-	idrank := r.FormValue("idrank")
+	// name := r.FormValue("name")
+	// date := r.FormValue("date")
+	// cellular := r.FormValue("cellular")
+	// business := r.FormValue("business")
+	// iddep := r.FormValue("iddep")
+	// idpos := r.FormValue("idpos")
+	// idrank := r.FormValue("idrank")
 
 	//удаляем старый файл
 
@@ -654,47 +655,77 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 	file, handler, err := r.FormFile("file")
 
 	if err != nil {
-		//fmt.Println("Error Retrieving the File")
-		//fmt.Println(err)
-		//return
-
-		_, err = db.Exec("UPDATE persons SET name=?, date=?, cellular=?, business=?, iddep=?, idpos=?, idrank=? WHERE idperson=?", name, date, cellular, business, iddep, idpos, idrank, idperson)
-
-		if err != nil {
-			panic(err.Error())
-		}
-
-		fmt.Fprintf(w, "Person with ID = %s was updated", idperson)
-
-	} else {
-
-		//fmt.Fprintf(w, "%v", handler.Header)
-		//fmt.Printf("Uploaded File: %+v\n", handler.Filename)
-		//fmt.Printf("File Size: %+v\n", handler.Size)
-		//fmt.Printf("MIME Header: %+v\n", handler.Header)
-
-		//Загружаем новый файл
-
-		f, err := os.OpenFile("./static/photo/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
-
-		if err != nil {
-			fmt.Println(err)
-			//return
-		}
-
-		defer f.Close()
-		io.Copy(f, file)
-
-		_, err = db.Exec("UPDATE persons SET name=?, date=?, cellular=?, business=?, iddep=?, idpos=?, idrank=?, file=? WHERE idperson=?", name, date, cellular, business, iddep, idpos, idrank, handler.Filename, idperson)
-
-		if err != nil {
-			panic(err.Error())
-		}
-
-		defer file.Close()
-		fmt.Fprintf(w, "Person with ID = %s was updated", idperson)
-
+		fmt.Println("Error Retrieving the File")
+		fmt.Println(err)
+		return
 	}
+	defer file.Close()
+
+	fmt.Printf("Uploaded File: %+v\n", handler.Filename)
+	fmt.Printf("File Size: %+v\n", handler.Size)
+	fmt.Printf("MIME Header: %+v\n", handler.Header)
+
+	// Create a temporary file within our temp-images directory that follows
+	// a particular naming pattern
+	tempFile, err := ioutil.TempFile("./static/photo/", "upload-*.png")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer tempFile.Close()
+
+	// read all of the contents of our uploaded file into a
+	// byte array
+	fileBytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		fmt.Println(err)
+	}
+	// write this byte array to our temporary file
+	tempFile.Write(fileBytes)
+	// return that we have successfully uploaded our file!
+	fmt.Fprintf(w, "Successfully Uploaded File\n")
+
+	// if err != nil {
+	// 	//fmt.Println("Error Retrieving the File")
+	// 	//fmt.Println(err)
+	// 	//return
+
+	// 	_, err = db.Exec("UPDATE persons SET name=?, date=?, cellular=?, business=?, iddep=?, idpos=?, idrank=? WHERE idperson=?", name, date, cellular, business, iddep, idpos, idrank, idperson)
+
+	// 	if err != nil {
+	// 		panic(err.Error())
+	// 	}
+
+	// 	fmt.Fprintf(w, "Person with ID = %s was updated", idperson)
+
+	// } else {
+
+	// 	//fmt.Fprintf(w, "%v", handler.Header)
+	// 	//fmt.Printf("Uploaded File: %+v\n", handler.Filename)
+	// 	//fmt.Printf("File Size: %+v\n", handler.Size)
+	// 	//fmt.Printf("MIME Header: %+v\n", handler.Header)
+
+	// 	//Загружаем новый файл
+
+	// 	f, err := os.OpenFile("./static/photo/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+
+	// 	if err != nil {
+	// 		fmt.Println(err)
+	// 		//return
+	// 	}
+
+	// 	defer f.Close()
+	// 	io.Copy(f, file)
+
+	// 	_, err = db.Exec("UPDATE persons SET name=?, date=?, cellular=?, business=?, iddep=?, idpos=?, idrank=?, file=? WHERE idperson=?", name, date, cellular, business, iddep, idpos, idrank, handler.Filename, idperson)
+
+	// 	if err != nil {
+	// 		panic(err.Error())
+	// 	}
+
+	// 	defer file.Close()
+	// 	fmt.Fprintf(w, "Person with ID = %s was updated", idperson)
+
+	// }
 
 }
 

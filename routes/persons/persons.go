@@ -672,6 +672,8 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tempFile.Close()
 
+	fmt.Println("Created File: " + tempFile.Name())
+
 	// read all of the contents of our uploaded file into a
 	// byte array
 	fileBytes, err := io.ReadAll(file)
@@ -682,10 +684,10 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 	tempFile.Write(fileBytes)
 
 	// Copy the uploaded file to the created file on the filesystem
-	if _, err := io.Copy(tempFile, file); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// if _, err := io.Copy(tempFile, file); err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
 
 	//fmt.Println(tempFile.Name())
 	defer os.Remove(tempFile.Name()) // clean up

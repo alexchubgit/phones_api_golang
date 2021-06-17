@@ -8,9 +8,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"time"
+
+	"github.com/segmentio/ksuid"
 )
 
 type Person struct {
@@ -617,126 +620,108 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("method:", r.Method)
 
-	if err := r.ParseMultipartForm(10 << 20); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	const MAX_UPLOAD_SIZE = 1024 * 1024 // 1MB
+
+	r.Body = http.MaxBytesReader(w, r.Body, MAX_UPLOAD_SIZE)
+	if err := r.ParseMultipartForm(MAX_UPLOAD_SIZE); err != nil {
+		http.Error(w, "The uploaded file is too big. Please choose an file that's less than 1MB in size", http.StatusBadRequest) //ограничение работает ошибки нет
 		return
 	}
 
 	idperson := r.FormValue("idperson")
-	// name := r.FormValue("name")
-	// date := r.FormValue("date")
-	// cellular := r.FormValue("cellular")
-	// business := r.FormValue("business")
-	// iddep := r.FormValue("iddep")
-	// idpos := r.FormValue("idpos")
-	// idrank := r.FormValue("idrank")
-
-	//удаляем старый файл
-
-	var person Person
-
-	err = db.QueryRow("SELECT file FROM persons WHERE idperson = ?", idperson).Scan(&person.File)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	if person.File != "" {
-
-		path := "./static/photo/" + person.File
-		err = os.Remove(path)
-
-		if err != nil {
-			fmt.Println(err)
-			//return
-		}
-	}
+	name := r.FormValue("name")
+	date := r.FormValue("date")
+	cellular := r.FormValue("cellular")
+	business := r.FormValue("business")
+	iddep := r.FormValue("iddep")
+	idpos := r.FormValue("idpos")
+	idrank := r.FormValue("idrank")
 
 	file, handler, err := r.FormFile("file")
 
 	if err != nil {
-		fmt.Println("Error Retrieving the File")
-		fmt.Println(err)
-		return
+		//fmt.Println("Error Retrieving the File")
+		//fmt.Println(err)
+		//return
+
+		_, err = db.Exec("UPDATE persons SET name=?, date=?, cellular=?, business=?, iddep=?, idpos=?, idrank=? WHERE idperson=?", name, date, cellular, business, iddep, idpos, idrank, idperson)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		fmt.Fprintf(w, "Person with ID = %s was updated", idperson)
+
+	} else {
+
+		//удаляем старый файл
+
+		var person Person
+
+		err = db.QueryRow("SELECT file FROM persons WHERE idperson = ?", idperson).Scan(&person.File)
+		if err != nil {
+			panic(err.Error())
+		}
+
+		if person.File != "" {
+
+			path := "./static/photo/" + person.File
+			err = os.Remove(path)
+
+			if err != nil {
+				fmt.Println(err)
+				//return
+			}
+		}
+
+		//Загружаем новый файл
+
+		// Create a temporary file within our temp-images directory that follows
+		// a particular naming pattern
+
+		uuid := ksuid.New()
+
+		uniquename := fmt.Sprintf(uuid.String() + filepath.Ext(handler.Filename))
+		uniquepath := fmt.Sprintf("./static/photo/%s", uniquename)
+		//fmt.Println(uniquename)
+		//fmt.Println(uniquepath)
+
+		tempFile, err := os.Create(uniquepath)
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer tempFile.Close()
+
+		//fmt.Println("Created File: " + tempFile.Name())
+
+		// read all of the contents of our uploaded file into a
+		// byte array
+		fileBytes, err := io.ReadAll(file)
+		if err != nil {
+			fmt.Println(err)
+		}
+		// write this byte array to our temporary file
+		tempFile.Write(fileBytes)
+
+		// Copy the uploaded file to the created file on the filesystem
+		if _, err := io.Copy(tempFile, file); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		//fmt.Println(tempFile.Name())
+		defer os.Remove(tempFile.Name()) // clean up
+		defer file.Close()
+
+		_, err = db.Exec("UPDATE persons SET name=?, date=?, cellular=?, business=?, iddep=?, idpos=?, idrank=?, file=? WHERE idperson=?", name, date, cellular, business, iddep, idpos, idrank, uniquename, idperson)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		fmt.Fprintf(w, "Person with ID = %s was updated", idperson)
+
 	}
-	defer file.Close()
-
-	fmt.Printf("Uploaded File: %+v\n", handler.Filename)
-	fmt.Printf("File Size: %+v\n", handler.Size)
-	//fmt.Printf("MIME Header: %+v\n", handler.Header)
-
-	// Create a temporary file within our temp-images directory that follows
-	// a particular naming pattern
-	tempFile, err := os.CreateTemp("./static/photo/", "upload-*.png")
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer tempFile.Close()
-
-	fmt.Println("Created File: " + tempFile.Name())
-
-	// read all of the contents of our uploaded file into a
-	// byte array
-	fileBytes, err := io.ReadAll(file)
-	if err != nil {
-		fmt.Println(err)
-	}
-	// write this byte array to our temporary file
-	tempFile.Write(fileBytes)
-
-	// Copy the uploaded file to the created file on the filesystem
-	// if _, err := io.Copy(tempFile, file); err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-
-	//fmt.Println(tempFile.Name())
-	defer os.Remove(tempFile.Name()) // clean up
-
-	// return that we have successfully uploaded our file!
-	fmt.Fprintf(w, "Successfully Uploaded File\n")
-
-	// if err != nil {
-	// 	//fmt.Println("Error Retrieving the File")
-	// 	//fmt.Println(err)
-	// 	//return
-
-	// 	_, err = db.Exec("UPDATE persons SET name=?, date=?, cellular=?, business=?, iddep=?, idpos=?, idrank=? WHERE idperson=?", name, date, cellular, business, iddep, idpos, idrank, idperson)
-
-	// 	if err != nil {
-	// 		panic(err.Error())
-	// 	}
-
-	// 	fmt.Fprintf(w, "Person with ID = %s was updated", idperson)
-
-	// } else {
-
-	// 	//fmt.Fprintf(w, "%v", handler.Header)
-	// 	//fmt.Printf("Uploaded File: %+v\n", handler.Filename)
-	// 	//fmt.Printf("File Size: %+v\n", handler.Size)
-	// 	//fmt.Printf("MIME Header: %+v\n", handler.Header)
-
-	// 	//Загружаем новый файл
-
-	// 	f, err := os.OpenFile("./static/photo/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
-
-	// 	if err != nil {
-	// 		fmt.Println(err)
-	// 		//return
-	// 	}
-
-	// 	defer f.Close()
-	// 	io.Copy(f, file)
-
-	// 	_, err = db.Exec("UPDATE persons SET name=?, date=?, cellular=?, business=?, iddep=?, idpos=?, idrank=?, file=? WHERE idperson=?", name, date, cellular, business, iddep, idpos, idrank, handler.Filename, idperson)
-
-	// 	if err != nil {
-	// 		panic(err.Error())
-	// 	}
-
-	// 	defer file.Close()
-	// 	fmt.Fprintf(w, "Person with ID = %s was updated", idperson)
-
-	// }
 
 }
 

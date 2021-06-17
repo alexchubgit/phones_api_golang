@@ -683,8 +683,8 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 
 		uniquename := fmt.Sprintf(uuid.String() + filepath.Ext(handler.Filename))
 		uniquepath := fmt.Sprintf("./static/photo/%s", uniquename)
-		//fmt.Println(uniquename)
-		//fmt.Println(uniquepath)
+		fmt.Println(uniquename)
+		fmt.Println(uniquepath)
 
 		tempFile, err := os.Create(uniquepath)
 		if err != nil {
@@ -710,7 +710,7 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 		}
 
 		//fmt.Println(tempFile.Name())
-		defer os.Remove(tempFile.Name()) // clean up
+		//defer os.Remove(tempFile.Name()) // clean up не работает в линуксе
 		defer file.Close()
 
 		_, err = db.Exec("UPDATE persons SET name=?, date=?, cellular=?, business=?, iddep=?, idpos=?, idrank=?, file=? WHERE idperson=?", name, date, cellular, business, iddep, idpos, idrank, uniquename, idperson)

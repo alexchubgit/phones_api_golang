@@ -36,7 +36,7 @@ func init() {
 	}
 
 	//логирование
-	file, err := os.OpenFile("logs.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	file, err := os.OpenFile("logs", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -104,7 +104,7 @@ func main() {
 
 	router.HandleFunc("/login", auth.Login).Methods("POST")
 
-	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
+	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./public/")))
 
 	fmt.Println("Server running on port 8000")
 	http.ListenAndServe(":8000", router)

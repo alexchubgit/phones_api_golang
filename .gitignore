@@ -1,6 +1,6 @@
 .env
 .git
-static/photo
+public/photo
 main
 main.exe
-logs.txt
+logs

@@ -424,7 +424,7 @@ func DeletePerson(w http.ResponseWriter, r *http.Request) {
 
 	if person.File != "" {
 
-		path := "./static/photo/" + person.File
+		path := "./public/photo/" + person.File
 		err = os.Remove(path)
 
 		if err != nil {
@@ -569,7 +569,7 @@ func CreatePerson(w http.ResponseWriter, r *http.Request) {
 		//fmt.Printf("File Size: %+v\n", handler.Size)
 		//fmt.Printf("MIME Header: %+v\n", handler.Header)
 
-		f, err := os.OpenFile("./static/photo/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+		f, err := os.OpenFile("./public/photo/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
 
 		if err != nil {
 			fmt.Println(err)
@@ -665,7 +665,7 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 
 		if person.File != "" {
 
-			path := "./static/photo/" + person.File
+			path := "./public/photo/" + person.File
 			err = os.Remove(path)
 
 			if err != nil {
@@ -682,7 +682,7 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 		uuid := ksuid.New()
 
 		uniquename := fmt.Sprintf(uuid.String() + filepath.Ext(handler.Filename))
-		uniquepath := fmt.Sprintf("./static/photo/%s", uniquename)
+		uniquepath := fmt.Sprintf("./public/photo/%s", uniquename)
 		fmt.Println(uniquename)
 		fmt.Println(uniquepath)
 

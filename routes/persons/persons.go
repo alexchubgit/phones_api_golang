@@ -528,12 +528,13 @@ func CreatePerson(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("method:", r.Method)
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	const MAX_UPLOAD_SIZE = 1024 * 1024 // 1MB
+
+	r.Body = http.MaxBytesReader(w, r.Body, MAX_UPLOAD_SIZE)
+	if err := r.ParseMultipartForm(MAX_UPLOAD_SIZE); err != nil {
+		http.Error(w, "The uploaded file is too big. Please choose an file that's less than 1MB in size", http.StatusBadRequest) //ограничение работает ошибки нет
 		return
 	}
-
-	file, handler, err := r.FormFile("file")
 
 	name := r.FormValue("name")
 	date := r.FormValue("date")
@@ -542,6 +543,8 @@ func CreatePerson(w http.ResponseWriter, r *http.Request) {
 	iddep := r.FormValue("iddep")
 	idpos := r.FormValue("idpos")
 	idrank := r.FormValue("idrank")
+
+	file, handler, err := r.FormFile("file")
 
 	if err != nil {
 		//fmt.Println("Error Retrieving the File")
@@ -564,22 +567,46 @@ func CreatePerson(w http.ResponseWriter, r *http.Request) {
 
 	} else {
 
-		//fmt.Fprintf(w, "%v", handler.Header)
-		//fmt.Printf("Uploaded File: %+v\n", handler.Filename)
-		//fmt.Printf("File Size: %+v\n", handler.Size)
-		//fmt.Printf("MIME Header: %+v\n", handler.Header)
+		//Загружаем новый файл
 
-		f, err := os.OpenFile("./public/photo/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+		// Create a temporary file within our temp-images directory that follows
+		// a particular naming pattern
 
+		uuid := ksuid.New()
+
+		uniquename := fmt.Sprintf(uuid.String() + filepath.Ext(handler.Filename))
+		uniquepath := fmt.Sprintf("./public/photo/%s", uniquename)
+		fmt.Println(uniquename)
+		fmt.Println(uniquepath)
+
+		tempFile, err := os.Create(uniquepath)
 		if err != nil {
 			fmt.Println(err)
-			//return
+		}
+		defer tempFile.Close()
+
+		//fmt.Println("Created File: " + tempFile.Name())
+
+		// read all of the contents of our uploaded file into a
+		// byte array
+		fileBytes, err := io.ReadAll(file)
+		if err != nil {
+			fmt.Println(err)
+		}
+		// write this byte array to our temporary file
+		tempFile.Write(fileBytes)
+
+		// Copy the uploaded file to the created file on the filesystem
+		if _, err := io.Copy(tempFile, file); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
-		defer f.Close()
-		io.Copy(f, file)
+		//fmt.Println(tempFile.Name())
+		//defer os.Remove(tempFile.Name()) // clean up не работает в линуксе
+		defer file.Close()
 
-		res, err := db.Exec("INSERT INTO persons (name, date, cellular, business, hash, iddep, idpos, idrank, file) VALUES (?, ?, ?, ?, '', ?, ?, ?, ?)", name, date, cellular, business, iddep, idpos, idrank, handler.Filename)
+		res, err := db.Exec("INSERT INTO persons (name, date, cellular, business, hash, iddep, idpos, idrank, file) VALUES (?, ?, ?, ?, '', ?, ?, ?, ?)", name, date, cellular, business, iddep, idpos, idrank, uniquename)
 
 		if err != nil {
 			panic(err)
@@ -724,22 +751,3 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
-
-// var buff bytes.Buffer
-// fileSize, err := buff.ReadFrom(file)
-// if err != nil {
-// 	fmt.Println(err)
-// }
-// fmt.Println(fileSize)
-
-// fmt.Println(r.FormValue("name"))
-// fmt.Println(r.FormValue("date"))
-// fmt.Println(r.FormValue("cellular"))
-// fmt.Println(r.FormValue("business"))
-// fmt.Println(r.FormValue("iddep"))
-// fmt.Println(r.FormValue("idpos"))
-// fmt.Println(r.FormValue("idrank"))
-
-// if person.File == "" {
-// 	fmt.Println("file is empty")
-// }

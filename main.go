@@ -110,3 +110,14 @@ func main() {
 	http.ListenAndServe(":8000", router)
 
 }
+
+// var buff bytes.Buffer
+// fileSize, err := buff.ReadFrom(file)
+// if err != nil {
+// 	fmt.Println(err)
+// }
+// fmt.Println(fileSize)
+
+// if person.File == "" {
+// 	fmt.Println("file is empty")
+// }

@@ -195,12 +195,12 @@ func CreateDep(w http.ResponseWriter, r *http.Request) {
 	idaddr := cd.Idaddr
 	idparent := cd.Idparent
 
-	fmt.Println(depart)
-	fmt.Println(sdep)
-	fmt.Println(email)
-	fmt.Println(abbr)
-	fmt.Println(idaddr)
-	fmt.Println(idparent)
+	// fmt.Println(depart)
+	// fmt.Println(sdep)
+	// fmt.Println(email)
+	// fmt.Println(abbr)
+	// fmt.Println(idaddr)
+	// fmt.Println(idparent)
 
 	if depart == "" {
 		fmt.Println("Feild is empty")
@@ -257,13 +257,13 @@ func UpdateDep(w http.ResponseWriter, r *http.Request) {
 	idaddr := ed.Idaddr
 	idparent := ed.Idparent
 
-	fmt.Println(iddep)
-	fmt.Println(depart)
-	fmt.Println(sdep)
-	fmt.Println(email)
-	fmt.Println(abbr)
-	fmt.Println(idaddr)
-	fmt.Println(idparent)
+	// fmt.Println(iddep)
+	// fmt.Println(depart)
+	// fmt.Println(sdep)
+	// fmt.Println(email)
+	// fmt.Println(abbr)
+	// fmt.Println(idaddr)
+	// fmt.Println(idparent)
 
 	if depart == "" {
 		fmt.Println("Feild is empty")

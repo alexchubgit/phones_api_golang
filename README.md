@@ -3,4 +3,4 @@ API phones
 
 ### Licensing
 
-Client phones is [MIT licensed](./LICENSE).
+API phones is [MIT licensed](./LICENSE).

@@ -176,7 +176,7 @@ func CreatePos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pos := cp.Pos
-	fmt.Println(pos)
+	// fmt.Println(pos)
 
 	if pos == "" {
 		fmt.Println("Feild is empty")
@@ -229,8 +229,8 @@ func UpdatePos(w http.ResponseWriter, r *http.Request) {
 	pos := ep.Pos
 	idpos := ep.IDPOS
 
-	fmt.Println(pos)
-	fmt.Println(idpos)
+	// fmt.Println(pos)
+	// fmt.Println(idpos)
 
 	if pos == "" {
 		fmt.Println("Feild is empty")

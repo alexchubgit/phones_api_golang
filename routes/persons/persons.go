@@ -576,8 +576,8 @@ func CreatePerson(w http.ResponseWriter, r *http.Request) {
 
 		uniquename := fmt.Sprintf(uuid.String() + filepath.Ext(handler.Filename))
 		uniquepath := fmt.Sprintf("./public/photo/%s", uniquename)
-		fmt.Println(uniquename)
-		fmt.Println(uniquepath)
+		// fmt.Println(uniquename)
+		// fmt.Println(uniquepath)
 
 		tempFile, err := os.Create(uniquepath)
 		if err != nil {
@@ -710,8 +710,8 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 
 		uniquename := fmt.Sprintf(uuid.String() + filepath.Ext(handler.Filename))
 		uniquepath := fmt.Sprintf("./public/photo/%s", uniquename)
-		fmt.Println(uniquename)
-		fmt.Println(uniquepath)
+		// fmt.Println(uniquename)
+		// fmt.Println(uniquepath)
 
 		tempFile, err := os.Create(uniquepath)
 		if err != nil {

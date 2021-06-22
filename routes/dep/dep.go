@@ -111,8 +111,6 @@ func GetOneDep(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(dep)
 
-	//'SELECT depart.*, addr.*, parent.sdep AS parent, parent.iddep AS idparent, COUNT(idperson) AS count FROM depart LEFT JOIN addr USING(idaddr) LEFT JOIN persons USING(iddep) LEFT JOIN depart AS parent ON depart.idparent=parent.iddep WHERE depart.iddep like ' + iddep + ' LIMIT 1'
-
 }
 
 func GetListDep(w http.ResponseWriter, r *http.Request) {
@@ -195,13 +193,6 @@ func CreateDep(w http.ResponseWriter, r *http.Request) {
 	idaddr := cd.Idaddr
 	idparent := cd.Idparent
 
-	// fmt.Println(depart)
-	// fmt.Println(sdep)
-	// fmt.Println(email)
-	// fmt.Println(abbr)
-	// fmt.Println(idaddr)
-	// fmt.Println(idparent)
-
 	if depart == "" {
 		fmt.Println("Feild is empty")
 	}
@@ -256,14 +247,6 @@ func UpdateDep(w http.ResponseWriter, r *http.Request) {
 	abbr := ed.Abbr
 	idaddr := ed.Idaddr
 	idparent := ed.Idparent
-
-	// fmt.Println(iddep)
-	// fmt.Println(depart)
-	// fmt.Println(sdep)
-	// fmt.Println(email)
-	// fmt.Println(abbr)
-	// fmt.Println(idaddr)
-	// fmt.Println(idparent)
 
 	if depart == "" {
 		fmt.Println("Feild is empty")

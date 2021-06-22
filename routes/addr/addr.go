@@ -183,11 +183,6 @@ func CreateAddr(w http.ResponseWriter, r *http.Request) {
 	lng := ca.Lng
 	postcode := ca.Postcode
 
-	// fmt.Println(addr)
-	// fmt.Println(lat)
-	// fmt.Println(lng)
-	// fmt.Println(postcode)
-
 	if addr == "" {
 		fmt.Println("Feild is empty")
 	}
@@ -240,12 +235,6 @@ func UpdateAddr(w http.ResponseWriter, r *http.Request) {
 	lat := ea.Lat
 	lng := ea.Lng
 	postcode := ea.Postcode
-
-	// fmt.Println(addr)
-	// fmt.Println(lat)
-	// fmt.Println(lng)
-	// fmt.Println(postcode)
-	// fmt.Println(idaddr)
 
 	if addr == "" {
 		fmt.Println("Feild is empty")

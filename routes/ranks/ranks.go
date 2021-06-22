@@ -175,7 +175,6 @@ func CreateRank(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rank := cr.Rank
-	// fmt.Println(rank)
 
 	if rank == "" {
 		fmt.Println("Feild is empty")
@@ -227,9 +226,6 @@ func UpdateRank(w http.ResponseWriter, r *http.Request) {
 
 	rank := er.Rank
 	idrank := er.IDRANK
-
-	// fmt.Println(rank)
-	// fmt.Println(idrank)
 
 	_, err = db.Exec("UPDATE ranks SET rank = ? WHERE idrank = ?", rank, idrank)
 

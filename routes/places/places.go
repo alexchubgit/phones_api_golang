@@ -155,14 +155,6 @@ func CreatePlace(w http.ResponseWriter, r *http.Request) {
 	idaddr := cp.Idaddr
 	idperson := cp.Idperson
 
-	// fmt.Println(place)
-	// fmt.Println(work)
-	// fmt.Println(internal)
-	// fmt.Println(ipphone)
-	// fmt.Println(arm)
-	// fmt.Println(idaddr)
-	// fmt.Println(idperson)
-
 	if place == "" {
 		fmt.Println("Feild is empty")
 	}
@@ -219,15 +211,6 @@ func UpdatePlace(w http.ResponseWriter, r *http.Request) {
 	arm := ep.Arm
 	idaddr := ep.Idaddr
 	idperson := ep.Idperson
-
-	// fmt.Println(idplace)
-	// fmt.Println(place)
-	// fmt.Println(work)
-	// fmt.Println(internal)
-	// fmt.Println(ipphone)
-	// fmt.Println(arm)
-	// fmt.Println(idaddr)
-	// fmt.Println(idperson)
 
 	if place == "" {
 		fmt.Println("Feild is empty")

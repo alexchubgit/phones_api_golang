@@ -82,6 +82,24 @@ func CheckPassword(password string, hashedPassword string) bool {
 
 }
 
+func CheckSecurity(password string, next http.HandlerFunc) http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+		//fmt.Println("middleware")
+		//fmt.Println(password)
+
+		//token := req.Header.Get("Authorization")
+		//fmt.Println(token)
+
+		// header := req.Header.Get("Super-Duper-Safe-Security")
+		// if header != "password" {
+		// 	fmt.Fprint(res, "Invalid password")
+		// 	res.WriteHeader(http.StatusUnauthorized)
+		// 	return
+		// }
+		next(res, req)
+	}
+}
+
 func Login(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
@@ -192,24 +210,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	//refreshToken, _ := rt.SignedString([]byte(os.Getenv("refreshKey")))
 	//fmt.Println(refreshToken)
 
-}
-
-func CheckSecurity(password string, next http.HandlerFunc) http.HandlerFunc {
-	return func(res http.ResponseWriter, req *http.Request) {
-		//fmt.Println("middleware")
-		//fmt.Println(password)
-
-		//token := req.Header.Get("Authorization")
-		//fmt.Println(token)
-
-		// header := req.Header.Get("Super-Duper-Safe-Security")
-		// if header != "password" {
-		// 	fmt.Fprint(res, "Invalid password")
-		// 	res.WriteHeader(http.StatusUnauthorized)
-		// 	return
-		// }
-		next(res, req)
-	}
 }
 
 //'SELECT * FROM persons LEFT JOIN role USING(idrole) WHERE `cellular` = "' + login + '" AND `passwd` = "' + password + '" OR `business` = "' + login + '" AND `passwd` = "' + password + '" LIMIT 1'

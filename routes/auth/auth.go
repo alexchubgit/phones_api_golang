@@ -11,10 +11,9 @@ import (
 	//"log"
 
 	"github.com/dgrijalva/jwt-go"
-	"golang.org/x/crypto/bcrypt"
-
-	//"github.com/go-redis/redis/v7"
 	"github.com/twinj/uuid"
+	"golang.org/x/crypto/bcrypt"
+	//"github.com/go-redis/redis/v7"
 )
 
 /*
@@ -131,7 +130,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
+	//логин идет в проверку пользователя
 	login := auth.Login
+	//пароль идет в проверку пароля на основе полученного у пользователя хэша
 	password := auth.Password
 
 	//Get hash from database
@@ -158,7 +159,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	//Output hash from db and password
 	//fmt.Println(hash)
 	//fmt.Println(password)
-	fmt.Println(HashPassword(password))
+
+	//fmt.Println(HashPassword(password))
 
 	//Check brypt
 
@@ -166,49 +168,59 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 		fmt.Println("OK")
 
+		//Создать токен JWT
+
+		td := &Token{}
+		td.AtExpires = time.Now().Add(time.Minute * 60).Unix()
+		td.AccessUuid = uuid.NewV4().String()
+		td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
+		td.RefreshUuid = uuid.NewV4().String()
+
+		atClaims := jwt.MapClaims{}
+		atClaims["authorized"] = true
+		atClaims["access_uuid"] = td.AccessUuid
+		atClaims["user_id"] = "userid"
+		atClaims["exp"] = td.AtExpires
+
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
+		tokenString, _ := token.SignedString([]byte(os.Getenv("secretKey")))
+		//fmt.Println(tokenString)
+
+		//if (results.length == 0) {
+		//        res.json({ success: false, message: 'Логин или пароль указаны неверно' });
+		//   }
+
+		//вывод результата
+		values := map[string]string{"token": tokenString, "success": "true", "message": "Запрос выполнен. Токен получен"}
+		json.NewEncoder(w).Encode(values)
+
+		//"SELECT idperson, name, role FROM persons LEFT JOIN role USING(idrole) WHERE (`cellular` = ? AND `passwd` = ?) OR (`business` = ? AND `passwd` = ?) LIMIT 1"
+
+		//Creating Refresh Token
+		rtClaims := jwt.MapClaims{}
+		rtClaims["refresh_uuid"] = td.RefreshUuid
+		rtClaims["user_id"] = "userid"
+		rtClaims["exp"] = td.RtExpires
+
+		//rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
+		//refreshToken, _ := rt.SignedString([]byte(os.Getenv("refreshKey")))
+		//fmt.Println(refreshToken)
+
 	} else {
 
 		fmt.Println("Does not OK")
 
+		//w.WriteHeader(http.StatusInternalServerError) //500 code
+		//w.WriteHeader(http.StatusForbidden) //403 code
+
+		//w.Write([]byte("500 - Something bad happened!"))
+		// res.json({ success: false, message: 'Логин или пароль указаны неверно' });
+
+		//вывод результата
+		values := map[string]string{"success": "false", "message": "Логин или пароль указаны неверно"}
+		json.NewEncoder(w).Encode(values)
+
 	}
-
-	//Создать токен JWT
-
-	td := &Token{}
-	td.AtExpires = time.Now().Add(time.Minute * 60).Unix()
-	td.AccessUuid = uuid.NewV4().String()
-	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
-	td.RefreshUuid = uuid.NewV4().String()
-
-	atClaims := jwt.MapClaims{}
-	atClaims["authorized"] = true
-	atClaims["access_uuid"] = td.AccessUuid
-	atClaims["user_id"] = "userid"
-	atClaims["exp"] = td.AtExpires
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
-	tokenString, _ := token.SignedString([]byte(os.Getenv("secretKey")))
-	//fmt.Println(tokenString)
-
-	//if (results.length == 0) {
-	//        res.json({ success: false, message: 'Логин или пароль указаны неверно' });
-	//   }
-
-	//вывод результата
-	values := map[string]string{"token": tokenString, "success": "true", "message": "Запрос выполнен. Токен получен"}
-	json.NewEncoder(w).Encode(values)
-
-	//"SELECT idperson, name, role FROM persons LEFT JOIN role USING(idrole) WHERE (`cellular` = ? AND `passwd` = ?) OR (`business` = ? AND `passwd` = ?) LIMIT 1"
-
-	//Creating Refresh Token
-	rtClaims := jwt.MapClaims{}
-	rtClaims["refresh_uuid"] = td.RefreshUuid
-	rtClaims["user_id"] = "userid"
-	rtClaims["exp"] = td.RtExpires
-
-	//rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
-	//refreshToken, _ := rt.SignedString([]byte(os.Getenv("refreshKey")))
-	//fmt.Println(refreshToken)
 
 }
 

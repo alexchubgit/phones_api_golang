@@ -20,26 +20,26 @@ import (
 Структура прав доступа JWT
 */
 
-type Maker interface {
-	CreateToken(username string, duration time.Duration) (string, error)
-	VerifyToken(token string) (*Payload, error)
-}
+// type Maker interface {
+// 	CreateToken(username string, duration time.Duration) (string, error)
+// 	VerifyToken(token string) (*Payload, error)
+// }
 
-type Payload struct {
-	ID        uuid.UUID `json:"id"`
-	Username  string    `json:"username"`
-	IssuedAt  time.Time `json:"issued_at"`
-	ExpiredAt time.Time `json:"expired_at"`
-}
+// type Payload struct {
+// 	ID        uuid.UUID `json:"id"`
+// 	Username  string    `json:"username"`
+// 	IssuedAt  time.Time `json:"issued_at"`
+// 	ExpiredAt time.Time `json:"expired_at"`
+// }
 
 type Token struct {
-	AccessToken  string
-	RefreshToken string
-	AccessUuid   string
-	RefreshUuid  string
-	AtExpires    int64
-	RtExpires    int64
-	UserId       uint
+	AccessToken string
+	AccessUuid  string
+	AtExpires   int64
+	//RefreshToken string
+	//RefreshUuid  string
+	//RtExpires    int64
+	UserId uint
 	jwt.StandardClaims
 }
 
@@ -107,11 +107,11 @@ func CheckSecurity(password string, next http.HandlerFunc) http.HandlerFunc {
 
 		// Initialize a new instance of `Claims`
 
-		jwtToken, err := jwt.ParseWithClaims(token, &Token{}, []byte("secretKey"))
-		if err != nil {
+		// jwtToken, err := jwt.ParseWithClaims(token, &Token{}, []byte("secretKey"))
+		// if err != nil {
 
-			return
-		}
+		// 	return
+		// }
 
 		// header := req.Header.Get("Super-Duper-Safe-Security")
 		// if header != "password" {
@@ -208,6 +208,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	//Генерация хэша на основе пароля введенного пользователем
+	//HashPassword(password)
+
 	//Проверяем полученный из базы хэш с помощью введенного пароля
 	if CheckPassword(hashedPassword, password) {
 
@@ -218,8 +221,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		td := &Token{}
 		td.AtExpires = time.Now().Add(time.Minute * 60).Unix()
 		td.AccessUuid = uuid.NewV4().String()
-		td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
-		td.RefreshUuid = uuid.NewV4().String()
+		// td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
+		// td.RefreshUuid = uuid.NewV4().String()
 
 		atClaims := jwt.MapClaims{}
 		atClaims["authorized"] = true
@@ -242,10 +245,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		//"SELECT idperson, name, role FROM persons LEFT JOIN role USING(idrole) WHERE (`cellular` = ? AND `passwd` = ?) OR (`business` = ? AND `passwd` = ?) LIMIT 1"
 
 		//Creating Refresh Token
-		rtClaims := jwt.MapClaims{}
-		rtClaims["refresh_uuid"] = td.RefreshUuid
-		rtClaims["user_id"] = "userid"
-		rtClaims["exp"] = td.RtExpires
+		// rtClaims := jwt.MapClaims{}
+		// rtClaims["refresh_uuid"] = td.RefreshUuid
+		// rtClaims["user_id"] = "userid"
+		// rtClaims["exp"] = td.RtExpires
 
 		//rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
 		//refreshToken, _ := rt.SignedString([]byte(os.Getenv("refreshKey")))
@@ -282,6 +285,3 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
-
-//Генерация хэша на основе пароля введенного пользователем
-//HashPassword(password)

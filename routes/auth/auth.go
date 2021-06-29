@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -11,7 +12,7 @@ import (
 	//"log"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/twinj/uuid"
+	//"github.com/twinj/uuid"
 	"golang.org/x/crypto/bcrypt"
 	//"github.com/go-redis/redis/v7"
 )
@@ -20,11 +21,6 @@ import (
 Структура прав доступа JWT
 */
 
-// type Maker interface {
-// 	CreateToken(username string, duration time.Duration) (string, error)
-// 	VerifyToken(token string) (*Payload, error)
-// }
-
 // type Payload struct {
 // 	ID        uuid.UUID `json:"id"`
 // 	Username  string    `json:"username"`
@@ -32,14 +28,11 @@ import (
 // 	ExpiredAt time.Time `json:"expired_at"`
 // }
 
+// Secret key to uniquely sign the token
+var key []byte
+
 type Token struct {
-	AccessToken string
-	AccessUuid  string
-	AtExpires   int64
-	//RefreshToken string
-	//RefreshUuid  string
-	//RtExpires    int64
-	UserId uint
+	Name string `json:"name"`
 	jwt.StandardClaims
 }
 
@@ -47,7 +40,7 @@ type Token struct {
 type Account struct {
 	IDPERSON int     `json:"idperson"`
 	Name     string  `json:"name"`
-	Role     *string `json:"role"`
+	Role     *string `json:"idrole"`
 	Hash     *string `json:"hash"`
 }
 
@@ -98,12 +91,60 @@ func CheckPassword(hashedPassword string, password string) bool {
 
 //Проверка JWT хэша в маршрутах
 func CheckSecurity(password string, next http.HandlerFunc) http.HandlerFunc {
-	return func(res http.ResponseWriter, req *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		//fmt.Println("middleware")
 		//fmt.Println(password)
 
-		token := req.Header.Get("Authorization")
-		fmt.Println(token)
+		// if req.Header["Authorization"] == nil {
+		// 	fmt.Println("No Token Found")
+		// }
+
+		tokenString := r.Header.Get("Authorization")
+		fmt.Println(tokenString)
+
+		key = []byte(os.Getenv("JWT_KEY"))
+
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			}
+			return key, nil
+		})
+
+		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+			ctx := context.WithValue(r.Context(), "props", claims)
+			// Access context values in handlers like this
+			// props, _ := r.Context().Value("props").(jwt.MapClaims)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		} else {
+			fmt.Println(err)
+			//w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte("Unauthorized"))
+		}
+
+		//tokenString := strings.Split(bearerToken, " ")[1]
+
+		// token, err := jwt.ParseWithClaims(tokenString, &Token{}, func(token *jwt.Token) (interface{}, error) {
+		// 	//fmt.Println(token)
+		// 	return key, nil
+		// })
+
+		// if err != nil {
+		// 	// check if Error is Signature Invalid Error
+		// 	if err == jwt.ErrSignatureInvalid {
+		// 		// return the Unauthorized Status
+		// 		//w.WriteHeader(http.StatusUnauthorized)
+		// 		return
+		// 	}
+		// 	// Return the Bad Request for any other error
+		// 	//w.WriteHeader(http.StatusBadRequest)
+		// 	return
+		// }
+
+		// fmt.Println(token)
+
+		// return token and err
+		//return token
 
 		// Initialize a new instance of `Claims`
 
@@ -119,7 +160,7 @@ func CheckSecurity(password string, next http.HandlerFunc) http.HandlerFunc {
 		// 	res.WriteHeader(http.StatusUnauthorized)
 		// 	return
 		// }
-		next(res, req)
+		next(w, r)
 
 		//     //Проверка токена из видео урока
 		//     const authHeader = req.get('Authorization');
@@ -218,20 +259,30 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 		//Создать токен JWT
 
-		td := &Token{}
-		td.AtExpires = time.Now().Add(time.Minute * 60).Unix()
-		td.AccessUuid = uuid.NewV4().String()
+		// td := &Token{}
+		// td.AtExpires = time.Now().Add(time.Minute * 60).Unix()
+		// td.AccessUuid = uuid.NewV4().String()
 		// td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
 		// td.RefreshUuid = uuid.NewV4().String()
 
-		atClaims := jwt.MapClaims{}
-		atClaims["authorized"] = true
-		atClaims["access_uuid"] = td.AccessUuid
-		atClaims["user_id"] = "userid"
-		atClaims["exp"] = td.AtExpires
+		// Claims := jwt.MapClaims{}
+		// Claims["authorized"] = true
+		// Claims["access_uuid"] = uuid.NewV4().String()
+		// Claims["exp"] = time.Now().Add(time.Minute * 60).Unix()
+		// Claims["user_id"] = "userid"
 
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
-		tokenString, _ := token.SignedString([]byte(os.Getenv("secretKey")))
+		var tokenClaim = Token{
+			Name: "Alex Chub",
+			StandardClaims: jwt.StandardClaims{
+				// Enter expiration in milisecond
+				ExpiresAt: time.Now().Add(60 * time.Minute).Unix(),
+			},
+		}
+
+		key = []byte(os.Getenv("JWT_KEY"))
+
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, tokenClaim)
+		tokenString, _ := token.SignedString(key)
 		//fmt.Println(tokenString)
 
 		//if (results.length == 0) {

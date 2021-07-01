@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -104,89 +103,39 @@ func CheckSecurity(password string, next http.HandlerFunc) http.HandlerFunc {
 
 		key = []byte(os.Getenv("JWT_KEY"))
 
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-			}
+		// Initialize a new instance of `Claims`
+		claims := &Token{}
+
+		// Parse the JWT string and store the result in `claims`.
+		// Note that we are passing the key in this method as well. This method will return an error
+		// if the token is invalid (if it has expired according to the expiry time we set on sign in),
+		// or if the signature does not match
+		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			return key, nil
 		})
-
-		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-			ctx := context.WithValue(r.Context(), "props", claims)
-			// Access context values in handlers like this
-			// props, _ := r.Context().Value("props").(jwt.MapClaims)
-			next.ServeHTTP(w, r.WithContext(ctx))
+		if err != nil {
+			if err == jwt.ErrSignatureInvalid {
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		if !token.Valid {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
 		} else {
-			fmt.Println(err)
-			//w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte("Unauthorized"))
+			fmt.Println("claims.Name")
+			fmt.Println(claims.Name)
 		}
 
-		//tokenString := strings.Split(bearerToken, " ")[1]
+		// Finally, return the welcome message to the user, along with their
+		// username given in the token
 
-		// token, err := jwt.ParseWithClaims(tokenString, &Token{}, func(token *jwt.Token) (interface{}, error) {
-		// 	//fmt.Println(token)
-		// 	return key, nil
-		// })
+		//w.Write([]byte(fmt.Sprintf("Welcome %s!", claims.Name)))
 
-		// if err != nil {
-		// 	// check if Error is Signature Invalid Error
-		// 	if err == jwt.ErrSignatureInvalid {
-		// 		// return the Unauthorized Status
-		// 		//w.WriteHeader(http.StatusUnauthorized)
-		// 		return
-		// 	}
-		// 	// Return the Bad Request for any other error
-		// 	//w.WriteHeader(http.StatusBadRequest)
-		// 	return
-		// }
-
-		// fmt.Println(token)
-
-		// return token and err
-		//return token
-
-		// Initialize a new instance of `Claims`
-
-		// jwtToken, err := jwt.ParseWithClaims(token, &Token{}, []byte("secretKey"))
-		// if err != nil {
-
-		// 	return
-		// }
-
-		// header := req.Header.Get("Super-Duper-Safe-Security")
-		// if header != "password" {
-		// 	fmt.Fprint(res, "Invalid password")
-		// 	res.WriteHeader(http.StatusUnauthorized)
-		// 	return
-		// }
 		next(w, r)
 
-		//     //Проверка токена из видео урока
-		//     const authHeader = req.get('Authorization');
-
-		//     if (!authHeader) {
-		//         res.status(401).json({ success: false, message: "Token not provided!" });
-		//     }
-
-		//     const token = authHeader.replace('token ', '')
-
-		//     //console.log('middleware ' + token);
-
-		//     try {
-		//         const decoded = jwt.verify(token, SECRET_KEY);
-
-		//         //ошибка заголовков
-		//         //res.status(200).json({ success: true, message: 'Good to authenticate token.' });
-
-		//         //console.log('decode ' + decoded.role + ' ' + decoded.name);
-		//         res.send(decoded);
-
-		//     } catch (e) {
-		//         if (e instanceof jwt.JsonWebTokenError) {
-		//             res.status(401).json({ success: false, message: "Token invalid!" });
-		//         }
-		//     }
 	}
 }
 
@@ -288,6 +237,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		//if (results.length == 0) {
 		//        res.json({ success: false, message: 'Логин или пароль указаны неверно' });
 		//   }
+
+		http.SetCookie(w, &http.Cookie{
+			Name:     "token",
+			Value:    tokenString,
+			HttpOnly: true,
+			//Expires:  time.Now().Add(60 * time.Minute).Unix(),
+		})
 
 		//вывод результата
 		values := map[string]string{"token": tokenString, "success": "true", "message": "Запрос выполнен. Токен получен"}

@@ -101,7 +101,7 @@ func CheckSecurity(password string, next http.HandlerFunc) http.HandlerFunc {
 		tokenString := r.Header.Get("Authorization")
 		fmt.Println(tokenString)
 
-		key = []byte(os.Getenv("JWT_KEY"))
+		//key = []byte(os.Getenv("JWT_KEY"))
 
 		// Initialize a new instance of `Claims`
 		claims := &Token{}
@@ -220,7 +220,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		// Claims["exp"] = time.Now().Add(time.Minute * 60).Unix()
 		// Claims["user_id"] = "userid"
 
-		var tokenClaim = Token{
+		var claims = Token{
 			Name: "Alex Chub",
 			StandardClaims: jwt.StandardClaims{
 				// Enter expiration in milisecond
@@ -230,7 +230,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 		key = []byte(os.Getenv("JWT_KEY"))
 
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, tokenClaim)
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 		tokenString, _ := token.SignedString(key)
 		//fmt.Println(tokenString)
 

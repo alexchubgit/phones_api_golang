@@ -8,12 +8,11 @@ import (
 	"os"
 	"time"
 
-	//"log"
-
 	"github.com/dgrijalva/jwt-go"
-	//"github.com/twinj/uuid"
 	"golang.org/x/crypto/bcrypt"
 	//"github.com/go-redis/redis/v7"
+	//"github.com/twinj/uuid"
+	//"log"
 )
 
 /*
@@ -30,17 +29,13 @@ import (
 // Secret key to uniquely sign the token
 var key []byte
 
-type Token struct {
-	Name string `json:"name"`
-	jwt.StandardClaims
-}
-
 //структура для учётной записи пользователя
 type Account struct {
-	IDPERSON int     `json:"idperson"`
-	Name     string  `json:"name"`
-	Role     *string `json:"idrole"`
-	Hash     *string `json:"hash"`
+	ID   int     `json:"idperson"`
+	Name string  `json:"name"`
+	Role *string `json:"idrole"`
+	Hash *string `json:"hash"`
+	jwt.StandardClaims
 }
 
 type Auth struct {
@@ -104,7 +99,7 @@ func CheckSecurity(password string, next http.HandlerFunc) http.HandlerFunc {
 		//key = []byte(os.Getenv("JWT_KEY"))
 
 		// Initialize a new instance of `Claims`
-		claims := &Token{}
+		claims := &Account{}
 
 		// Parse the JWT string and store the result in `claims`.
 		// Note that we are passing the key in this method as well. This method will return an error
@@ -224,7 +219,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		// Claims["exp"] = time.Now().Add(time.Minute * 60).Unix()
 		// Claims["user_id"] = "userid"
 
-		var claims = Token{
+		var claims = Account{
 			Name: "Alex Chub",
 			StandardClaims: jwt.StandardClaims{
 				// Enter expiration in milisecond
@@ -348,4 +343,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 // 		Value:   tokenString,
 // 		Expires: expirationTime,
 // 	})
+// }
+
+// type Token struct {
+// 	Name string `json:"name"`
+// 	jwt.StandardClaims
 // }

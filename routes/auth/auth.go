@@ -15,17 +15,6 @@ import (
 	//"log"
 )
 
-/*
-Структура прав доступа JWT
-*/
-
-// type Payload struct {
-// 	ID        uuid.UUID `json:"id"`
-// 	Username  string    `json:"username"`
-// 	IssuedAt  time.Time `json:"issued_at"`
-// 	ExpiredAt time.Time `json:"expired_at"`
-// }
-
 // Secret key to uniquely sign the token
 var key []byte
 
@@ -34,7 +23,7 @@ type Account struct {
 	ID   int     `json:"idperson"`
 	Name string  `json:"name"`
 	Role *string `json:"idrole"`
-	Hash *string `json:"hash"`
+	Hash string  `json:"hash"`
 	jwt.StandardClaims
 }
 
@@ -86,17 +75,11 @@ func CheckPassword(hashedPassword string, password string) bool {
 //Проверка JWT хэша в маршрутах
 func CheckSecurity(password string, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		//fmt.Println("middleware")
-		//fmt.Println(password)
-
-		// if req.Header["Authorization"] == nil {
-		// 	fmt.Println("No Token Found")
-		// }
 
 		tokenString := r.Header.Get("Authorization")
 		fmt.Println(tokenString)
 
-		//key = []byte(os.Getenv("JWT_KEY"))
+		key = []byte(os.Getenv("JWT_KEY"))
 
 		// Initialize a new instance of `Claims`
 		claims := &Account{}
@@ -110,32 +93,83 @@ func CheckSecurity(password string, next http.HandlerFunc) http.HandlerFunc {
 		})
 		if err != nil {
 			if err == jwt.ErrSignatureInvalid {
+				fmt.Println("Токен не действителен")
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
+			fmt.Println("Ошибка")
+			//проверить ошибку на клиенте и выкинуть в авторизацию
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 		if !token.Valid {
+			fmt.Println("Токен не действителен")
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		} else {
-			//fmt.Println("claims.Name")
+			fmt.Println("Токен действителен")
 			fmt.Println(claims.Name)
+			//вывести должность и звание
+
+			//fmt.Println(claims.StandardClaims.ExpiresAt)
+
+			// Finally, return the welcome message to the user, along with their
+			// username given in the token
+
+			//w.Write([]byte(fmt.Sprintf("Welcome %s!", claims.Name)))
+
+			next(w, r)
 		}
-
-		// Finally, return the welcome message to the user, along with their
-		// username given in the token
-
-		//w.Write([]byte(fmt.Sprintf("Welcome %s!", claims.Name)))
-
-		next(w, r)
 
 	}
 }
 
 func CheckSecurityPages(w http.ResponseWriter, r *http.Request) {
 
+	tokenString := r.Header.Get("Authorization")
+	fmt.Println(tokenString)
+
+	key = []byte(os.Getenv("JWT_KEY"))
+
+	// Initialize a new instance of `Claims`
+	claims := &Account{}
+
+	// Parse the JWT string and store the result in `claims`.
+	// Note that we are passing the key in this method as well. This method will return an error
+	// if the token is invalid (if it has expired according to the expiry time we set on sign in),
+	// or if the signature does not match
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return key, nil
+	})
+	if err != nil {
+		if err == jwt.ErrSignatureInvalid {
+			fmt.Println("Токен не действителен")
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		fmt.Println("Ошибка")
+		//проверить ошибку на клиенте и выкинуть в авторизацию
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	if !token.Valid {
+		fmt.Println("Токен не действителен")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	} else {
+		fmt.Println("Токен действителен")
+		fmt.Println(claims.Name)
+		//вывести должность и звание
+
+		//fmt.Println(claims.StandardClaims.ExpiresAt)
+
+		// Finally, return the welcome message to the user, along with their
+		// username given in the token
+
+		//w.Write([]byte(fmt.Sprintf("Welcome %s!", claims.Name)))
+
+		//next(w, r)
+	}
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -176,11 +210,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	//Get hash from database
 
-	var hashedPassword string
-
 	//Ищем человека по номеру телефона личному или служебному и вытаскиваем хэш brcypt
 
-	result, err := db.Query("SELECT hash FROM persons WHERE cellular = ?  OR business = ? LIMIT 1", login, login)
+	result, err := db.Query("SELECT name, hash FROM persons WHERE cellular = ?  OR business = ? LIMIT 1", login, login)
 
 	if err != nil {
 		panic(err.Error())
@@ -188,42 +220,48 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	defer result.Close()
 
+	// for result.Next() {
+
+	// 	err := result.Scan(&hashedPassword)
+
+	// 	if err != nil {
+	// 		panic(err.Error())
+	// 	}
+	// }
+
+	var account Account
+
 	for result.Next() {
 
-		err := result.Scan(&hashedPassword)
+		err := result.Scan(&account.Name, &account.Hash)
 
 		if err != nil {
 			panic(err.Error())
 		}
 	}
 
+	fmt.Println(account.Name)
+	fmt.Println(account.Hash)
+
+	//var hashedPassword string
+
+	var hashedPassword = account.Hash
+
 	//Генерация хэша на основе пароля введенного пользователем
 	//HashPassword(password)
 
 	//Проверяем полученный из базы хэш с помощью введенного пароля
 	if CheckPassword(hashedPassword, password) {
+		//if CheckPassword(hashedPassword, password) {
 
 		fmt.Println("OK")
 
 		//Создать токен JWT
-
-		// td := &Token{}
-		// td.AtExpires = time.Now().Add(time.Minute * 60).Unix()
-		// td.AccessUuid = uuid.NewV4().String()
-		// td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
-		// td.RefreshUuid = uuid.NewV4().String()
-
-		// Claims := jwt.MapClaims{}
-		// Claims["authorized"] = true
-		// Claims["access_uuid"] = uuid.NewV4().String()
-		// Claims["exp"] = time.Now().Add(time.Minute * 60).Unix()
-		// Claims["user_id"] = "userid"
-
 		var claims = Account{
-			Name: "Alex Chub",
+			Name: account.Name,
 			StandardClaims: jwt.StandardClaims{
 				// Enter expiration in milisecond
-				ExpiresAt: time.Now().Add(60 * time.Minute).Unix(),
+				ExpiresAt: time.Now().Add(5 * time.Minute).Unix(),
 			},
 		}
 
@@ -233,16 +271,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		tokenString, _ := token.SignedString(key)
 		//fmt.Println(tokenString)
 
-		//if (results.length == 0) {
-		//        res.json({ success: false, message: 'Логин или пароль указаны неверно' });
-		//   }
-
-		http.SetCookie(w, &http.Cookie{
-			Name:     "token",
-			Value:    tokenString,
-			HttpOnly: true,
-			//Expires:  time.Now().Add(60 * time.Minute).Unix(),
-		})
+		// http.SetCookie(w, &http.Cookie{
+		// 	Name:     "token",
+		// 	Value:    tokenString,
+		// 	HttpOnly: true,
+		// 	//Expires:  time.Now().Add(60 * time.Minute).Unix(),
+		// })
 
 		//вывод результата
 		values := map[string]string{"token": tokenString, "success": "true", "message": "Запрос выполнен. Токен получен"}
@@ -348,4 +382,18 @@ func Login(w http.ResponseWriter, r *http.Request) {
 // type Token struct {
 // 	Name string `json:"name"`
 // 	jwt.StandardClaims
+// }
+
+//fmt.Println("middleware")
+//fmt.Println(password)
+
+// if req.Header["Authorization"] == nil {
+// 	fmt.Println("No Token Found")
+// }
+
+// authHeader := strings.Split(r.Header.Get("Authorization"), "Bearer ")
+// if len(tokenString) != 2 {
+// 	fmt.Println("Malformed token")
+// 	w.WriteHeader(http.StatusUnauthorized)
+// 	w.Write([]byte("Malformed Token"))
 // }

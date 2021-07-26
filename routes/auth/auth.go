@@ -20,7 +20,6 @@ var key []byte
 
 //структура для учётной записи пользователя
 type Account struct {
-	ID   int     `json:"idperson"`
 	Name string  `json:"name"`
 	Role *string `json:"idrole"`
 	Hash string  `json:"hash"`
@@ -73,7 +72,7 @@ func CheckPassword(hashedPassword string, password string) bool {
 }
 
 //Проверка JWT хэша в маршрутах
-func CheckSecurity(password string, next http.HandlerFunc) http.HandlerFunc {
+func CheckSecurityRoute(password string, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		tokenString := r.Header.Get("Authorization")
@@ -124,7 +123,7 @@ func CheckSecurity(password string, next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func CheckSecurityPages(w http.ResponseWriter, r *http.Request) {
+func CheckSecurityPage(w http.ResponseWriter, r *http.Request) {
 
 	tokenString := r.Header.Get("Authorization")
 	fmt.Println(tokenString)

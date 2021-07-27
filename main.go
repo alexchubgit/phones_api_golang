@@ -104,6 +104,7 @@ func main() {
 
 	router.HandleFunc("/login", auth.Login).Methods("POST")
 	router.HandleFunc("/checkauth", auth.CheckSecurityPage).Methods("GET")
+	router.HandleFunc("/refresh", auth.Refresh).Methods("GET")
 
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./public/")))
 

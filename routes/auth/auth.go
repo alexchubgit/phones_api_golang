@@ -264,42 +264,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		tokenString, _ := token.SignedString(key)
 		//fmt.Println(tokenString)
 
-		// http.SetCookie(w, &http.Cookie{
-		// 	Name:     "token",
-		// 	Value:    tokenString,
-		// 	HttpOnly: true,
-		// 	//Expires:  time.Now().Add(60 * time.Minute).Unix(),
-		// })
-
 		//вывод результата
 		values := map[string]string{"token": tokenString, "success": "true", "message": "Запрос выполнен. Токен получен"}
 		json.NewEncoder(w).Encode(values)
-
-		//"SELECT idperson, name, role FROM persons LEFT JOIN role USING(idrole) WHERE (`cellular` = ? AND `passwd` = ?) OR (`business` = ? AND `passwd` = ?) LIMIT 1"
-
-		//Creating Refresh Token
-		// rtClaims := jwt.MapClaims{}
-		// rtClaims["refresh_uuid"] = td.RefreshUuid
-		// rtClaims["user_id"] = "userid"
-		// rtClaims["exp"] = td.RtExpires
-
-		//rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
-		//refreshToken, _ := rt.SignedString([]byte(os.Getenv("refreshKey")))
-		//fmt.Println(refreshToken)
-
-		//payload = {
-		//                 idperson: results[0].idperson,
-		//                 name: results[0].name,
-		//                 phone: results[0].cellular,
-		//                 role: results[0].role
-		//             };
-
-		//             //console.log(payload)
-		//             console.log(SECRET_KEY)
-		//             //здесь создается JWT
-		//             const token = jwt.sign(payload, SECRET_KEY, {
-		//                 expiresIn: 60 * 60 * 24 // истекает через 24 часа
-		//             });
 
 	} else {
 
@@ -320,6 +287,39 @@ func Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func Refresh(w http.ResponseWriter, r *http.Request) {
+
+	tokenString := r.Header.Get("Authorization")
+	fmt.Println(tokenString)
+
+	key = []byte(os.Getenv("JWT_KEY"))
+
+	// Initialize a new instance of `Claims`
+	claims := &Account{}
+
+	// Parse the JWT string and store the result in `claims`.
+	// Note that we are passing the key in this method as well. This method will return an error
+	// if the token is invalid (if it has expired according to the expiry time we set on sign in),
+	// or if the signature does not match
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return key, nil
+	})
+	if err != nil {
+		if err == jwt.ErrSignatureInvalid {
+			fmt.Println("Токен не действителен")
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		fmt.Println("Ошибка")
+		//проверить ошибку на клиенте и выкинуть в авторизацию
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	if !token.Valid {
+		fmt.Println("Токен не действителен")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	// (BEGIN) The code uptil this point is the same as the first part of the `Welcome` route
 	c, err := r.Cookie("token")
 	if err != nil {
@@ -331,7 +331,7 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	tknStr := c.Value
-	claims := &Account{}
+	//claims := &Account{}
 	tkn, err := jwt.ParseWithClaims(tknStr, claims, func(token *jwt.Token) (interface{}, error) {
 		return key, nil
 	})
@@ -373,6 +373,33 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 		Value:   tokenString,
 		Expires: expirationTime,
 	})
+
+	//"SELECT idperson, name, role FROM persons LEFT JOIN role USING(idrole) WHERE (`cellular` = ? AND `passwd` = ?) OR (`business` = ? AND `passwd` = ?) LIMIT 1"
+
+	//Creating Refresh Token
+	// rtClaims := jwt.MapClaims{}
+	// rtClaims["refresh_uuid"] = td.RefreshUuid
+	// rtClaims["user_id"] = "userid"
+	// rtClaims["exp"] = td.RtExpires
+
+	//rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
+	//refreshToken, _ := rt.SignedString([]byte(os.Getenv("refreshKey")))
+	//fmt.Println(refreshToken)
+
+	//payload = {
+	//                 idperson: results[0].idperson,
+	//                 name: results[0].name,
+	//                 phone: results[0].cellular,
+	//                 role: results[0].role
+	//             };
+
+	//             //console.log(payload)
+	//             console.log(SECRET_KEY)
+	//             //здесь создается JWT
+	//             const token = jwt.sign(payload, SECRET_KEY, {
+	//                 expiresIn: 60 * 60 * 24 // истекает через 24 часа
+	//             });
+
 }
 
 // func Refresh(w http.ResponseWriter, r *http.Request) {
@@ -455,3 +482,10 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 // 		panic(err.Error())
 // 	}
 // }
+
+// http.SetCookie(w, &http.Cookie{
+// 	Name:     "token",
+// 	Value:    tokenString,
+// 	HttpOnly: true,
+// 	//Expires:  time.Now().Add(60 * time.Minute).Unix(),
+// })

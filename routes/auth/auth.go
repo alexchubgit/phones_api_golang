@@ -305,49 +305,16 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		if err == jwt.ErrSignatureInvalid {
-			fmt.Println("Токен не действителен")
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		fmt.Println("Ошибка")
-		//проверить ошибку на клиенте и выкинуть в авторизацию
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if !token.Valid {
-		fmt.Println("Токен не действителен")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-
-	// (BEGIN) The code uptil this point is the same as the first part of the `Welcome` route
-	c, err := r.Cookie("token")
-	if err != nil {
-		if err == http.ErrNoCookie {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	tknStr := c.Value
-	//claims := &Account{}
-	tkn, err := jwt.ParseWithClaims(tknStr, claims, func(token *jwt.Token) (interface{}, error) {
-		return key, nil
-	})
-	if err != nil {
-		if err == jwt.ErrSignatureInvalid {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	if !tkn.Valid {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-	// (END) The code up-till this point is the same as the first part of the `Welcome` route
 
 	// We ensure that a new token is not issued until enough time has elapsed
 	// In this case, a new token will only be issued if the old token is within
@@ -358,76 +325,36 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Now, create a new token for the current use, with a renewed expiration time
-	expirationTime := time.Now().Add(5 * time.Minute)
-	claims.ExpiresAt = expirationTime.Unix()
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(key)
+	claims.ExpiresAt = time.Now().Add(5 * time.Minute).Unix()
+
+	key = []byte(os.Getenv("JWT_KEY"))
+
+	token = jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err = token.SignedString(key)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	//fmt.Println(tokenString)
 
 	// Set the new token as the users `token` cookie
-	http.SetCookie(w, &http.Cookie{
-		Name:    "token",
-		Value:   tokenString,
-		Expires: expirationTime,
-	})
-
-	//"SELECT idperson, name, role FROM persons LEFT JOIN role USING(idrole) WHERE (`cellular` = ? AND `passwd` = ?) OR (`business` = ? AND `passwd` = ?) LIMIT 1"
-
-	//Creating Refresh Token
-	// rtClaims := jwt.MapClaims{}
-	// rtClaims["refresh_uuid"] = td.RefreshUuid
-	// rtClaims["user_id"] = "userid"
-	// rtClaims["exp"] = td.RtExpires
-
-	//rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
-	//refreshToken, _ := rt.SignedString([]byte(os.Getenv("refreshKey")))
-	//fmt.Println(refreshToken)
-
-	//payload = {
-	//                 idperson: results[0].idperson,
-	//                 name: results[0].name,
-	//                 phone: results[0].cellular,
-	//                 role: results[0].role
-	//             };
-
-	//             //console.log(payload)
-	//             console.log(SECRET_KEY)
-	//             //здесь создается JWT
-	//             const token = jwt.sign(payload, SECRET_KEY, {
-	//                 expiresIn: 60 * 60 * 24 // истекает через 24 часа
-	//             });
+	// http.SetCookie(w, &http.Cookie{
+	// 	Name:    "token",
+	// 	Value:   tokenString,
+	// 	Expires: expirationTime,
+	// })
 
 }
 
-// func Refresh(w http.ResponseWriter, r *http.Request) {
-// 	// (BEGIN) The code uptil this point is the same as the first part of the `Welcome` route
-// 	tokenString := r.Header.Get("Authorization")
-// 	fmt.Println(tokenString)
-
-// 	//key = []byte(os.Getenv("JWT_KEY"))
-
-// 	// Initialize a new instance of `Claims`
-// 	claims := &Token{}
-
-// 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-// 		return key, nil
-// 	})
-// 	if err != nil {
-// 		if err == jwt.ErrSignatureInvalid {
-// 			w.WriteHeader(http.StatusUnauthorized)
-// 			return
-// 		}
-// 		w.WriteHeader(http.StatusBadRequest)
-// 		return
-// 	}
-// 	if !token.Valid {
+// c, err := r.Cookie("token")
+// if err != nil {
+// 	if err == http.ErrNoCookie {
 // 		w.WriteHeader(http.StatusUnauthorized)
 // 		return
 // 	}
-// 	// (END) The code up-till this point is the same as the first part of the `Welcome` route
+// 	w.WriteHeader(http.StatusBadRequest)
+// 	return
+// }
 
 // 	// We ensure that a new token is not issued until enough time has elapsed
 // 	// In this case, a new token will only be issued if the old token is within
@@ -446,46 +373,3 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 // 		w.WriteHeader(http.StatusInternalServerError)
 // 		return
 // 	}
-
-// 	// Set the new token as the users `token` cookie
-// 	http.SetCookie(w, &http.Cookie{
-// 		Name:    "token",
-// 		Value:   tokenString,
-// 		Expires: expirationTime,
-// 	})
-// }
-
-// type Token struct {
-// 	Name string `json:"name"`
-// 	jwt.StandardClaims
-// }
-
-//fmt.Println("middleware")
-//fmt.Println(password)
-
-// if req.Header["Authorization"] == nil {
-// 	fmt.Println("No Token Found")
-// }
-
-// authHeader := strings.Split(r.Header.Get("Authorization"), "Bearer ")
-// if len(tokenString) != 2 {
-// 	fmt.Println("Malformed token")
-// 	w.WriteHeader(http.StatusUnauthorized)
-// 	w.Write([]byte("Malformed Token"))
-// }
-
-// for result.Next() {
-
-// 	err := result.Scan(&hashedPassword)
-
-// 	if err != nil {
-// 		panic(err.Error())
-// 	}
-// }
-
-// http.SetCookie(w, &http.Cookie{
-// 	Name:     "token",
-// 	Value:    tokenString,
-// 	HttpOnly: true,
-// 	//Expires:  time.Now().Add(60 * time.Minute).Unix(),
-// })

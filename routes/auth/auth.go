@@ -110,7 +110,7 @@ func CheckSecurityRoute(password string, next http.HandlerFunc) http.HandlerFunc
 			//fmt.Println(claims.Name)
 			//вывести должность и звание
 
-			//fmt.Println(claims.StandardClaims.ExpiresAt)
+			fmt.Println(claims.StandardClaims.ExpiresAt)
 
 			// Finally, return the welcome message to the user, along with their
 			// username given in the token
@@ -316,10 +316,12 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// We ensure that a new token is not issued until enough time has elapsed
-	// In this case, a new token will only be issued if the old token is within
-	// 30 seconds of expiry. Otherwise, return a bad request status
-	if time.Until(claims.StandardClaims.ExpiresAt) > 30*time.Second {
+	// Мы гарантируем, что новый токен не будет выпущен, пока не пройдет достаточно времени
+	// В этом случае новый токен будет выпущен только в том случае, если старый токен находится внутри
+	// 30 секунд истечения. В противном случае вернуть неверный статус запроса
+
+	//Время сейчас больше времени токена
+	if claims.StandardClaims.ExpiresAt < time.Now().UTC().Unix() {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -335,7 +337,7 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	//fmt.Println(tokenString)
+	fmt.Println(tokenString)
 
 	// Set the new token as the users `token` cookie
 	// http.SetCookie(w, &http.Cookie{

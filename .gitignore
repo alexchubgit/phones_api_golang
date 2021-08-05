@@ -4,3 +4,5 @@ public/photo
 main
 main.exe
 logs
+dump.sql
+.gitignore

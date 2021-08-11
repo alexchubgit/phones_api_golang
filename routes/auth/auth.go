@@ -254,7 +254,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			Name: account.Name,
 			StandardClaims: jwt.StandardClaims{
 				// Enter expiration in milisecond
-				ExpiresAt: time.Now().Add(5 * time.Minute).Unix(),
+				ExpiresAt: time.Now().Add(15 * time.Minute).Unix(),
 			},
 		}
 

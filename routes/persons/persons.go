@@ -151,7 +151,8 @@ func Search(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("query")
 	//fmt.Println(query)
 
-	regexp_alph := `^[ЁёА-я]{2,}\s?[ЁёА-я]{2,}?\s?[ЁёА-я]{2,}?$`
+	//regexp_alph := `^[ЁёА-я]{2,}\s?[ЁёА-я]{2,}?\s?[ЁёА-я]{2,}?$`
+	regexp_alph := `^[ЁёА-я -]{0,30}$`
 	regexp_num := `^[[:digit:]]{2,11}$`
 
 	var IsLetter = regexp.MustCompile(regexp_alph).MatchString

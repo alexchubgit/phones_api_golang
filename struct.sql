@@ -1,44 +1,45 @@
--- --------------------------------------------------------
--- Хост:                         127.0.0.1
--- Версия сервера:               10.5.9-MariaDB - mariadb.org binary distribution
--- Операционная система:         Win64
--- HeidiSQL Версия:              11.0.0.5919
--- --------------------------------------------------------
+-- MariaDB dump 10.19  Distrib 10.5.11-MariaDB, for debian-linux-gnu (x86_64)
+--
+-- Host: localhost    Database: phones
+-- ------------------------------------------------------
+-- Server version	10.5.11-MariaDB-1:10.5.11+maria~focal
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET NAMES utf8 */;
-/*!50503 SET NAMES utf8mb4 */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
--- Дамп структуры для таблица phones.addr
+--
+-- Table structure for table `addr`
+--
+
 DROP TABLE IF EXISTS `addr`;
-CREATE TABLE IF NOT EXISTS `addr` (
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `addr` (
   `idaddr` int(3) NOT NULL AUTO_INCREMENT,
-  `addr` varchar(70) NOT NULL,
-  `lat` float(10,6) NOT NULL,
-  `lng` float(10,6) NOT NULL,
-  `postcode` int(6) NOT NULL,
+  `addr` varchar(70) DEFAULT NULL,
+  `lat` float(10,6) NOT NULL DEFAULT 0.000000,
+  `lng` float(10,6) NOT NULL DEFAULT 0.000000,
+  `postcode` int(6) NOT NULL DEFAULT 0,
   PRIMARY KEY (`idaddr`)
-) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=75 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- Экспортируемые данные не выделены.
+--
+-- Table structure for table `depart`
+--
 
--- Дамп структуры для таблица phones.certs
-DROP TABLE IF EXISTS `certs`;
-CREATE TABLE IF NOT EXISTS `certs` (
-  `idcert` int(11) NOT NULL AUTO_INCREMENT,
-  `filename` varchar(50) DEFAULT NULL,
-  `startdate` date NOT NULL DEFAULT '2021-04-27',
-  `enddate` date NOT NULL DEFAULT '2021-04-27',
-  PRIMARY KEY (`idcert`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
-
--- Экспортируемые данные не выделены.
-
--- Дамп структуры для таблица phones.depart
 DROP TABLE IF EXISTS `depart`;
-CREATE TABLE IF NOT EXISTS `depart` (
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `depart` (
   `iddep` int(3) NOT NULL AUTO_INCREMENT,
   `depart` varchar(200) NOT NULL,
   `sdep` varchar(60) NOT NULL,
@@ -47,23 +48,17 @@ CREATE TABLE IF NOT EXISTS `depart` (
   `idparent` int(3) NOT NULL DEFAULT 0,
   `abbr` varchar(3) NOT NULL,
   PRIMARY KEY (`iddep`)
-) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=54 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- Экспортируемые данные не выделены.
+--
+-- Table structure for table `persons`
+--
 
--- Дамп структуры для таблица phones.docs
-DROP TABLE IF EXISTS `docs`;
-CREATE TABLE IF NOT EXISTS `docs` (
-  `iddoc` int(11) NOT NULL AUTO_INCREMENT,
-  `filename` varchar(50) NOT NULL DEFAULT '',
-  PRIMARY KEY (`iddoc`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- Экспортируемые данные не выделены.
-
--- Дамп структуры для таблица phones.persons
 DROP TABLE IF EXISTS `persons`;
-CREATE TABLE IF NOT EXISTS `persons` (
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `persons` (
   `idperson` int(5) NOT NULL AUTO_INCREMENT,
   `name` varchar(300) NOT NULL,
   `date` date NOT NULL,
@@ -75,14 +70,19 @@ CREATE TABLE IF NOT EXISTS `persons` (
   `idrank` int(3) NOT NULL,
   `idrole` int(3) NOT NULL DEFAULT 0,
   `passwd` varchar(45) NOT NULL DEFAULT 'e10adc3949ba59abbe56e057f20f883e',
+  `hash` varchar(200) NOT NULL,
   PRIMARY KEY (`idperson`)
-) ENGINE=InnoDB AUTO_INCREMENT=654 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=682 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- Экспортируемые данные не выделены.
+--
+-- Table structure for table `places`
+--
 
--- Дамп структуры для таблица phones.places
 DROP TABLE IF EXISTS `places`;
-CREATE TABLE IF NOT EXISTS `places` (
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `places` (
   `idplace` int(3) NOT NULL AUTO_INCREMENT,
   `place` varchar(10) NOT NULL,
   `work` varchar(18) NOT NULL,
@@ -92,52 +92,72 @@ CREATE TABLE IF NOT EXISTS `places` (
   `idperson` int(3) DEFAULT NULL,
   `idaddr` int(3) NOT NULL,
   PRIMARY KEY (`idplace`)
-) ENGINE=InnoDB AUTO_INCREMENT=395 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=398 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- Экспортируемые данные не выделены.
+--
+-- Table structure for table `pos`
+--
 
--- Дамп структуры для таблица phones.pos
 DROP TABLE IF EXISTS `pos`;
-CREATE TABLE IF NOT EXISTS `pos` (
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `pos` (
   `idpos` int(3) NOT NULL AUTO_INCREMENT,
   `pos` varchar(300) NOT NULL,
   PRIMARY KEY (`idpos`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- Экспортируемые данные не выделены.
+--
+-- Table structure for table `ranks`
+--
 
--- Дамп структуры для таблица phones.ranks
 DROP TABLE IF EXISTS `ranks`;
-CREATE TABLE IF NOT EXISTS `ranks` (
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ranks` (
   `idrank` int(3) NOT NULL AUTO_INCREMENT,
   `rank` varchar(300) NOT NULL,
   PRIMARY KEY (`idrank`)
 ) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- Экспортируемые данные не выделены.
+--
+-- Table structure for table `role`
+--
 
--- Дамп структуры для таблица phones.role
 DROP TABLE IF EXISTS `role`;
-CREATE TABLE IF NOT EXISTS `role` (
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `role` (
   `idrole` int(3) NOT NULL,
   `role` varchar(6) NOT NULL,
   PRIMARY KEY (`idrole`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- Экспортируемые данные не выделены.
+--
+-- Table structure for table `whitelist`
+--
 
--- Дамп структуры для таблица phones.tokens
-DROP TABLE IF EXISTS `tokens`;
-CREATE TABLE IF NOT EXISTS `tokens` (
-  `idtoken` int(11) NOT NULL AUTO_INCREMENT,
-  `number` varchar(50) DEFAULT NULL,
-  `idowner` int(11) DEFAULT NULL,
-  `status` varchar(50) DEFAULT NULL,
-  PRIMARY KEY (`idtoken`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+DROP TABLE IF EXISTS `whitelist`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `whitelist` (
+  `idban` int(3) NOT NULL AUTO_INCREMENT,
+  `ipaddr` varchar(19) NOT NULL,
+  PRIMARY KEY (`idban`)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
--- Экспортируемые данные не выделены.
-
-/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
-/*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2021-10-31  6:21:21

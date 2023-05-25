@@ -8,7 +8,6 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 
 	"alexchubgit/api/routes/addr"
 	"alexchubgit/api/routes/dep"
@@ -31,9 +30,11 @@ var (
 
 func init() {
 
-	if err := godotenv.Load(".env"); err != nil {
-		log.Print("File .env not found")
-	}
+	// os.Setenv("MYSQL_URL", "phones:ZPwg4wHh@tcp(localhost:3306)/phones")
+
+	// if err := godotenv.Load(".env"); err != nil {
+	// 	log.Print("File .env not found")
+	// }
 
 	//логирование
 	file, err := os.OpenFile("logs", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)

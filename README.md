@@ -18,7 +18,7 @@ docker image rmi alexchub/golang-app:latest
 
 **Run App docker container**
 ```bash
-docker run -d -p 8000:8000 --name app -e MYSQL_URL="phones:ZPwg4wHh@tcp(172.17.0.2:3306)/phones" -v /app/photo:/app/public/photo alexchub/golang-app:latest
+docker run -d -p 8000:8000 --name app -e MYSQL_URL="phones:ZPwg4wHh@tcp(172.17.0.2:3306)/phones" -e JWT_KEY=VQBbmC9g -v /app/photo:/app/public/photo alexchub/golang-app:latest
 ```
 
 
@@ -52,7 +52,7 @@ mysql -h 172.17.0.2 -u phones -P 3306 -p
 
 **Create database structure**
 ```bash
-mysql -h 172.17.0.2 -u phones -p phones < /home/user/Downloads/Github/phones_api_golang/struct.sql
+mysql -h 172.17.0.2 -u phones -p phones < ~/Downloads/Github/phones_api_golang/struct.sql
 ```
 
 
